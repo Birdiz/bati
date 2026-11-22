@@ -42,7 +42,7 @@ jobs:
             curl --fail --silent --show-error --output /dev/null --write-out "$page %{http_code}\n" "http://localhost:3000$page"
           done
       - run: npm run test:offline
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:
           name: offline-check
