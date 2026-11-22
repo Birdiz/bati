@@ -1,0 +1,49 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# A new push replaces the runs of its PR; on main, every commit runs to the end.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  vitest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npm test
+
+  # What Railway runs and probes, then the real offline check in Chromium.
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./.github/actions/setup
+      - run: npx playwright install --with-deps chromium
+      - run: npm run build
+      - name: Server start-up
+        run: |
+          node dist-server/main.js > "$RUNNER_TEMP/server.log" 2>&1 &
+          server=$!
+          trap 'kill "$server"; cat "$RUNNER_TEMP/server.log"' EXIT
+          curl --fail --silent --show-error --retry 20 --retry-connrefused --retry-delay 1 http://localhost:3000/sante
+          echo
+          for page in / /sw.js /manifest.json; do
+            curl --fail --silent --show-error --output /dev/null --write-out "$page %{http_code}\n" "http://localhost:3000$page"
+          done
+      - run: npm run test:offline
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: offline-check
+          path: out/offline/
