@@ -3,12 +3,13 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>bati — aérer au bon moment</title>
+    <title>Maison Bloc — aérer au bon moment</title>
     <meta
       name="description"
       content="Savoir quand aérer une maison ancienne en pierre : humidité absolue dedans et dehors, point de rosée, surfaces froides. Fonctionne sans réseau."
     />
-    <meta name="theme-color" content="#f6f6f4" />
+    <meta name="theme-color" content="#f2ede3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -17,7 +18,13 @@
   </head>
   <body>
     <header class="top">
-      <h1 class="brand">bati</h1>
+      <h1 class="brand">
+        <svg class="brand-mark" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+          <polygon points="10,2 18,8 18,18 2,18 2,8" fill="none" stroke="currentColor" stroke-width="2" />
+          <rect x="7.5" y="11" width="5" height="7" fill="currentColor" />
+        </svg>
+        Maison Bloc
+      </h1>
       <p id="storeStatus" class="store-status" hidden></p>
     </header>
 
@@ -38,7 +45,11 @@
               <input id="indoorRh" name="indoorRh" type="text" inputmode="decimal" enterkeyhint="next" />
             </label>
             <p class="field-error" id="indoorRh-error" hidden></p>
-            <output id="indoorAH" class="ah" for="indoorT indoorRh"></output>
+            <div class="ah-box">
+              <span class="ah-label">Humidité absolue</span>
+              <output id="indoorAH" class="ah" for="indoorT indoorRh"></output>
+              <span id="indoorTag" class="side-tag" hidden></span>
+            </div>
           </fieldset>
           <fieldset class="reading" data-side="outdoor">
             <legend>Extérieur</legend>
@@ -52,16 +63,42 @@
               <input id="outdoorRh" name="outdoorRh" type="text" inputmode="decimal" enterkeyhint="done" />
             </label>
             <p class="field-error" id="outdoorRh-error" hidden></p>
-            <output id="outdoorAH" class="ah" for="outdoorT outdoorRh"></output>
+            <div class="ah-box">
+              <span class="ah-label">Humidité absolue</span>
+              <output id="outdoorAH" class="ah" for="outdoorT outdoorRh"></output>
+              <span id="outdoorTag" class="side-tag" hidden></span>
+            </div>
           </fieldset>
+          <div id="ahScale" class="scale" hidden>
+            <p class="scale-head">
+              <span class="scale-unit">Humidité absolue, g/m³</span>
+              <span class="scale-gap">Écart <span id="scaleGap"></span></span>
+            </p>
+            <div class="scale-track" aria-hidden="true">
+              <span id="scaleIndoor" class="mark mark-indoor">
+                <span class="mark-label">Int. <span id="scaleIndoorValue"></span></span>
+                <span class="mark-tick"></span>
+              </span>
+              <span class="scale-line"></span>
+              <span id="scaleBand" class="scale-band"></span>
+              <span id="scaleOutdoor" class="mark mark-outdoor">
+                <span class="mark-tick"></span>
+                <span class="mark-label">Ext. <span id="scaleOutdoorValue"></span></span>
+              </span>
+              <span id="scaleTicks" class="scale-ticks"></span>
+            </div>
+          </div>
           <fieldset class="conditions">
-            <legend>Conditions</legend>
-            <label class="check"><input id="storm" type="checkbox" /> Orage en cours</label>
-            <label class="check"><input id="recentRain" type="checkbox" /> Il a plu ces dernières heures</label>
+            <legend class="visually-hidden">Conditions</legend>
+            <label class="switch"><span>Orage en cours</span><input id="storm" type="checkbox" role="switch" /></label>
+            <label class="switch"
+              ><span>Il a plu ces dernières heures</span><input id="recentRain" type="checkbox" role="switch"
+            /></label>
           </fieldset>
         </form>
 
         <div id="advice" class="advice" data-tone="empty" aria-live="polite">
+          <p id="adviceVerdict" class="advice-verdict" hidden></p>
           <p id="adviceTitle" class="advice-title">Saisir les relevés intérieur et extérieur.</p>
           <ul id="adviceLines" class="advice-lines"></ul>
           <p id="dewPointLine" class="dew-point" hidden></p>

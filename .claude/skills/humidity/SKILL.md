@@ -22,6 +22,8 @@ Inputs: measured indoor/outdoor readings, plus two declared conditions (storm, r
 
 Recent rain only changes where to open (`openingPlan`): avoid facades facing a wet area; prefer facades ≥ 135° from every wet facade, upstairs if they have upstairs windows; fall back to any dry facade; none left → VMC only or wait.
 
+`drierSide(gap)` names the drier air from the measurements alone (null within the band, unchanged by a storm): the quick check lightens that side.
+
 No VMC → no VMC instruction anywhere. **Atmospheric pressure is not modelled** (mechanism not established): do not add it.
 
 ## Cold surface

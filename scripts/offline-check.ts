@@ -73,7 +73,7 @@ try {
   consoleErrors.length = 0;
 
   await page.reload();
-  check("app reloads offline", (await page.title()).includes("bati"));
+  check("app reloads offline", (await page.title()).includes("Maison Bloc"));
   check("page is controlled by the service worker", await page.evaluate(() => !!navigator.serviceWorker.controller));
 
   // 3. House profile.

@@ -1,12 +1,31 @@
 /** Screen 1: quick check. Indoor and outdoor readings → AH, indoor dew point, one advice. Can be saved to the log. */
-import { decideAdvice } from "../domain/humidity/advice";
+import { type Advice, decideAdvice, drierSide } from "../domain/humidity/advice";
 import { createEntry } from "../domain/humidity/log";
 import { absoluteHumidity } from "../domain/humidity/psychrometrics";
-import { READING_ERROR, adviceText, fmt } from "../text/fr";
-import { byId, flash, showAdvice } from "./dom";
+import { CODE_LABEL, READING_ERROR, SIDE_TAG, type Tone, adviceText, fmt, gapValue } from "../text/fr";
+import { byId, flash, h, showAdvice } from "./dom";
 import { type AppState, type Draft, type FieldErrors, draftInput, parseReading } from "./state";
 
 const FIELDS = ["indoorT", "indoorRh", "outdoorT", "outdoorRh"] as const;
+
+/**
+ * Bounds of the absolute humidity scale: 0–20 g/m³ covers the Vosges most of the year; a humid summer day goes
+ * beyond, then the scale grows to the next step instead of clipping the marker.
+ */
+export function scaleFor(values: number[]): { max: number; step: number } {
+  const top = Math.max(20, ...values);
+  const step = top <= 30 ? 5 : 10;
+  return { max: Math.ceil(top / step) * step, step };
+}
+
+/** Position on the scale, in percent of its width. */
+const pct = (v: number, max: number) => (Math.min(Math.max(v, 0), max) / max) * 100;
+
+/** Labels near an end are shifted so they stay inside the scale; the tick stays on the value. */
+function place(mark: HTMLElement, p: number): void {
+  mark.style.setProperty("--pos", `${p}%`);
+  mark.style.setProperty("--shift", p < 12 ? "0%" : p > 88 ? "-100%" : "-50%");
+}
 
 export function mountCheck(state: AppState): { show(): void } {
   const inputs = Object.fromEntries(FIELDS.map((f) => [f, byId<HTMLInputElement>(f)])) as Record<
@@ -39,6 +58,43 @@ export function mountCheck(state: AppState): { show(): void } {
     byId(id).textContent = r ? `${fmt(absoluteHumidity(r))} g/m³` : "";
   }
 
+  /** Lighter panel and "plus sec / plus humide" tags on the side holding less water; nothing within the band. */
+  function showSides(advice: Advice | null): void {
+    const side = advice ? drierSide(advice.gap) : null;
+    const form = byId("checkForm");
+    if (side) form.dataset.drier = side;
+    else delete form.dataset.drier;
+    for (const s of ["indoor", "outdoor"] as const) {
+      const tag = byId(`${s}Tag`);
+      tag.hidden = !side;
+      tag.textContent = side ? (side === s ? SIDE_TAG.drier : SIDE_TAG.wetter) : "";
+    }
+  }
+
+  function showScale(advice: Advice | null, tone: Tone): void {
+    const scale = byId("ahScale");
+    scale.hidden = !advice;
+    if (!advice) return;
+    scale.dataset.tone = tone;
+    const { indoorAH: i, outdoorAH: o } = advice;
+    const { max, step } = scaleFor([i, o]);
+    byId("scaleGap").textContent = gapValue(advice.gap);
+    byId("scaleIndoorValue").textContent = fmt(i);
+    byId("scaleOutdoorValue").textContent = fmt(o);
+    place(byId("scaleIndoor"), pct(i, max));
+    place(byId("scaleOutdoor"), pct(o, max));
+    const band = byId("scaleBand");
+    band.style.setProperty("--from", `${pct(Math.min(i, o), max)}%`);
+    band.style.setProperty("--width", `${Math.max(pct(Math.abs(i - o), max), 0.6)}%`);
+    const ticks: HTMLElement[] = [];
+    for (let v = 0; v <= max; v += step) {
+      const t = h("span", { class: "scale-tick" }, String(v));
+      t.style.setProperty("--pos", `${pct(v, max)}%`);
+      ticks.push(t);
+    }
+    byId("scaleTicks").replaceChildren(...ticks);
+  }
+
   function render(): void {
     const d = state.draft;
     const { input, errors } = draftInput(d);
@@ -46,16 +102,25 @@ export function mountCheck(state: AppState): { show(): void } {
     showAH("indoorAH", d.indoorT, d.indoorRh);
     showAH("outdoorAH", d.outdoorT, d.outdoorRh);
     const dew = byId("dewPointLine");
+    const verdict = byId("adviceVerdict");
     saveForm.hidden = !input;
     if (!input) {
+      showSides(null);
+      showScale(null, "neutral");
       showAdvice(byId("advice"), byId("adviceTitle"), byId("adviceLines"), {
         empty: "Saisir les relevés intérieur et extérieur.",
       });
+      verdict.hidden = true;
       dew.hidden = true;
       return;
     }
     const advice = decideAdvice(input, state.profile);
-    showAdvice(byId("advice"), byId("adviceTitle"), byId("adviceLines"), adviceText(advice, state.profile));
+    const text = adviceText(advice, state.profile);
+    showSides(advice);
+    showScale(advice, text.tone);
+    showAdvice(byId("advice"), byId("adviceTitle"), byId("adviceLines"), text);
+    verdict.hidden = false;
+    verdict.textContent = CODE_LABEL[advice.code];
     dew.hidden = false;
     dew.textContent = `Point de rosée intérieur : ${fmt(advice.indoorDewPoint)} °C. Une surface plus froide se couvre d'eau.`;
   }
