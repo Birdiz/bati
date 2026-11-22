@@ -1,0 +1,42 @@
+{
+  "name": "bati",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Conseils d'aération et suivi de l'humidité pour les maisons anciennes en pierre",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build && vite build --ssr server/main.ts --outDir dist-server",
+    "preview": "vite preview",
+    "start": "node dist-server/main.js",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:offline": "tsx scripts/offline-check.ts",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.5",
+    "hono": "^4.13.14"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.5",
+    "eslint": "^10.13.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.13.0",
+    "jsdom": "^30.1.3",
+    "prettier": "^3.9.10",
+    "tsx": "^4.23.15",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

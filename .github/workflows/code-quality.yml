@@ -1,0 +1,43 @@
+name: Code Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - id: setup
+        uses: ./.github/actions/setup
+      # All three checks run to the end even if one fails, to see everything at once.
+      - name: Types
+        run: npm run typecheck
+      - name: ESLint
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: npm run lint
+      - name: Prettier
+        if: ${{ !cancelled() && steps.setup.outcome == 'success' }}
+        run: npm run format:check
+
+  # Not required to merge: a vulnerability published elsewhere must not block an unrelated PR.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Vulnerabilities in runtime dependencies
+        run: npm audit --omit=dev --audit-level=high
