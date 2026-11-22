@@ -77,6 +77,51 @@ describe("quick check", () => {
     expect($("#saveForm").hidden).toBe(false);
   });
 
+  it("marks the drier side, places both on the scale and names the verdict", () => {
+    expect($("#ahScale").hidden).toBe(true);
+    expect($("#adviceVerdict").hidden).toBe(true);
+    fillCheck();
+    expect($("#checkForm").dataset.drier).toBe("outdoor");
+    expect(text("#outdoorTag")).toBe("plus sec");
+    expect(text("#indoorTag")).toBe("plus humide");
+    expect($("#ahScale").hidden).toBe(false);
+    expect($("#ahScale").dataset.tone).toBe("go");
+    expect(text("#scaleGap")).toBe("5,8 g/m³");
+    expect(text("#scaleIndoorValue")).toBe("13,3");
+    expect($("#scaleOutdoor").style.getPropertyValue("--pos")).toMatch(/^37\.\d+%$/);
+    expect([...document.querySelectorAll("#scaleTicks span")].map((t) => t.textContent)).toEqual([
+      "0",
+      "5",
+      "10",
+      "15",
+      "20",
+    ]);
+    expect(text("#adviceVerdict")).toBe("Aérer");
+  });
+
+  it("keeps the measured drier side under a storm, and marks none within the band", () => {
+    fillCheck();
+    tick("#storm");
+    expect(text("#adviceVerdict")).toBe("Orage");
+    expect($("#ahScale").dataset.tone).toBe("alert");
+    expect($("#checkForm").dataset.drier).toBe("outdoor");
+    tick("#storm", false);
+    type("#outdoorT", "21");
+    type("#outdoorRh", "72");
+    expect(text("#adviceVerdict")).toBe("Équilibre");
+    expect($("#checkForm").dataset.drier).toBeUndefined();
+    expect($("#indoorTag").hidden).toBe(true);
+  });
+
+  it("grows the scale past 20 g/m³ on a humid summer day", () => {
+    fillCheck();
+    type("#outdoorT", "30");
+    type("#outdoorRh", "75");
+    const ticks = [...document.querySelectorAll("#scaleTicks span")].map((t) => t.textContent);
+    expect(ticks.at(-1)).toBe("25");
+    expect(text("#adviceVerdict")).toBe("Garder fermé");
+  });
+
   it("explains a field error and hides the advice", () => {
     fillCheck();
     type("#outdoorRh", "180");

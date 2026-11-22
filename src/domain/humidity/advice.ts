@@ -69,6 +69,16 @@ export interface Advice {
   indoorDewPoint: number;
 }
 
+/**
+ * Which air holds less water, from the measurements alone (conditions do not change it): null within
+ * NEUTRAL_BAND, where the difference is measurement noise.
+ */
+export function drierSide(gap: number): "indoor" | "outdoor" | null {
+  if (gap <= -NEUTRAL_BAND) return "outdoor";
+  if (gap >= NEUTRAL_BAND) return "indoor";
+  return null;
+}
+
 function vmcAction(ventilation: Ventilation, wanted: Exclude<VmcAction, null>): VmcAction {
   return ventilation === "none" ? null : wanted;
 }
@@ -95,7 +105,7 @@ export function decideAdvice(input: CheckInput, profile: HouseProfile): Advice {
   const outdoorAH = absoluteHumidity(input.outdoor);
   const gap = outdoorAH - indoorAH;
   const measures = { indoorAH, outdoorAH, gap, indoorDewPoint: dewPoint(input.indoor) };
-  const drierOutside = gap <= -NEUTRAL_BAND;
+  const drierOutside = drierSide(gap) === "outdoor";
   const v = profile.ventilation;
 
   if (input.conditions.storm)

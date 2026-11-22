@@ -1,10 +1,10 @@
-# bati (working title)
+# Maison Bloc (internal code: bati)
 
 Ventilation advice for old stone farmhouses in the Vosges: compare **absolute humidity** inside and outside, check cold surfaces against the indoor dew point, keep a measurement log. Installable PWA, works fully offline once loaded, no account, no backend: all data stays on the device.
 
 ## What it does
 
-1. **Relevé** (quick check): indoor and outdoor temperature + RH → absolute humidity of both, indoor dew point, one advice.
+1. **Relevé** (quick check): indoor and outdoor temperature + RH → absolute humidity of both (drier side lightened, both on a g/m³ scale), indoor dew point, one advice.
 2. **Ma maison** (house profile): VMC type, facades (orientation, wet area, upstairs windows), known cold surfaces. The advice uses it ("ouvrir à l'étage, côté Jardin (sud-ouest)").
 3. **Surface froide**: a known surface and its temperature → condensation risk yes/no, margin in °C.
 4. **Carnet** (log): each check can be saved with a note; JSON backup export/import (merge or replace).
@@ -37,13 +37,14 @@ src/
   storage/            localStorage behind a key-value interface
   ui/                 screens, state, PWA registration
   sw.js               service worker (file list injected at build)
-  styles/app.css      deliberately bare, on tokens: the visual identity comes later
+  styles/app.css      visual identity "Pierre et chaux", on tokens (see .claude/skills/design)
+  fonts/              Alegreya and Alegreya Sans, latin woff2 (OFL), served with the app
 server/               static server for Railway (compression, cache, CSP), no API
 tests/                Vitest (domain + screens with jsdom)
 scripts/offline-check.ts  real offline check in Chromium
 ```
 
-`bati` is the stable internal code: storage keys `bati-*`, backup format `bati-export`. The product name can change without touching them.
+`bati` is the stable internal code: storage keys `bati-*`, backup format `bati-export`. The product name (Maison Bloc) only appears in the UI and the manifest: it can change without touching them.
 
 ## Development
 

@@ -45,6 +45,14 @@ export const CODE_LABEL: Record<AdviceCode, string> = {
   balanced: "Équilibre",
 };
 
+/** Tag under each side's absolute humidity once both are known. */
+export const SIDE_TAG = { drier: "plus sec", wetter: "plus humide" } as const;
+
+/** Value next to "Écart" on the absolute humidity scale. */
+export function gapValue(gap: number): string {
+  return `${fmt(Math.abs(gap))} g/m³`;
+}
+
 export const READING_ERROR: Record<ReadingError, string> = {
   notANumber: "Saisir un nombre.",
   temperatureOutOfRange: "Température entre −40 et 50 °C.",

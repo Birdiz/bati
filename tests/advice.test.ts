@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { type CheckInput, NEUTRAL_BAND, decideAdvice, openingPlan } from "../src/domain/humidity/advice";
+import { type CheckInput, NEUTRAL_BAND, decideAdvice, drierSide, openingPlan } from "../src/domain/humidity/advice";
 import type { Facade, HouseProfile } from "../src/domain/house/profile";
 
 const facade = (id: string, orientation: Facade["orientation"], wet = false, upstairs = false): Facade => ({
@@ -124,5 +124,19 @@ describe("openingPlan", () => {
     // Wet N and E: SW is ≥ 135° from both, S is only 90° from E.
     const p = openingPlan([facade("n", "N", true), facade("e", "E", true), facade("s", "S"), facade("sw", "SW")], true);
     expect(p.prefer).toEqual(["sw"]);
+  });
+});
+
+describe("drierSide", () => {
+  it("names the drier air outside the neutral band, from the gap only", () => {
+    expect(drierSide(-5.8)).toBe("outdoor");
+    expect(drierSide(4.1)).toBe("indoor");
+    expect(drierSide(-NEUTRAL_BAND)).toBe("outdoor");
+    expect(drierSide(NEUTRAL_BAND)).toBe("indoor");
+    expect(drierSide(-0.2)).toBeNull();
+  });
+
+  it("keeps the measured side under a storm", () => {
+    expect(drierSide(decideAdvice(check(drier, true), house).gap)).toBe("outdoor");
   });
 });
