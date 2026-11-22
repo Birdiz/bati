@@ -1,0 +1,195 @@
+/**
+ * French wording of the domain results. Pure (no DOM), so it is tested like the domain.
+ * Words aimed at homeowners: no jargon beyond "humidité absolue", "point de rosée" and "VMC", which they use.
+ */
+import type { Advice } from "../domain/humidity/advice";
+import type { BackupError } from "../domain/backup";
+import type { HouseProfile, Orientation, Ventilation } from "../domain/house/profile";
+import type { AdviceCode } from "../domain/humidity/advice";
+import type { ReadingError } from "../domain/humidity/psychrometrics";
+import type { SurfaceCheck } from "../domain/humidity/surface";
+
+/** One decimal, French comma, no "-0,0". */
+export function fmt(x: number, digits = 1): string {
+  const s = x.toFixed(digits);
+  return (Number(s) === 0 ? (0).toFixed(digits) : s).replace(".", ",");
+}
+
+/** Parses a number typed with a comma or a dot; NaN if it is not exactly a number. */
+export function parseDecimal(s: string): number {
+  const t = s.trim().replace(",", ".");
+  return /^-?(\d+\.?\d*|\.\d+)$/.test(t) ? Number(t) : Number.NaN;
+}
+
+export const ORIENTATION_LABEL: Record<Orientation, string> = {
+  N: "nord",
+  NE: "nord-est",
+  E: "est",
+  SE: "sud-est",
+  S: "sud",
+  SW: "sud-ouest",
+  W: "ouest",
+  NW: "nord-ouest",
+};
+
+export const VENTILATION_LABEL: Record<Ventilation, string> = {
+  none: "Pas de VMC",
+  singleFlow: "VMC simple flux",
+  doubleFlow: "VMC double flux",
+};
+
+export const CODE_LABEL: Record<AdviceCode, string> = {
+  drierOutside: "Aérer",
+  wetterOutside: "Garder fermé",
+  storm: "Orage",
+  balanced: "Équilibre",
+};
+
+export const READING_ERROR: Record<ReadingError, string> = {
+  notANumber: "Saisir un nombre.",
+  temperatureOutOfRange: "Température entre −40 et 50 °C.",
+  humidityOutOfRange: "Humidité entre 1 et 100 %.",
+};
+
+export const BACKUP_ERROR: Record<BackupError, string> = {
+  notJson: "Ce fichier n'est pas une sauvegarde lisible.",
+  notABackup: "Ce fichier n'est pas une sauvegarde de l'application.",
+  newerVersion: "Cette sauvegarde vient d'une version plus récente de l'application : mettez-la à jour d'abord.",
+};
+
+export type Tone = "go" | "stop" | "alert" | "neutral";
+
+export interface AdviceText {
+  title: string;
+  tone: Tone;
+  lines: string[];
+}
+
+/** "Sud (sud-ouest)", or just the orientation when the name says nothing more. */
+function facadeLabel(profile: HouseProfile, id: string): string {
+  const f = profile.facades.find((x) => x.id === id);
+  if (!f) return "";
+  const o = ORIENTATION_LABEL[f.orientation];
+  return f.name.toLowerCase() === o ? o : `${f.name} (${o})`;
+}
+
+/** "a", "a et b", "a, b et c". */
+export function list(items: string[]): string {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} et ${items.at(-1)!}`;
+}
+
+function vmcLine(a: Advice, ventilation: Ventilation): string | null {
+  if (a.vmc === "full") return "Mettre la VMC en grande vitesse.";
+  if (a.vmc === "normal") return "VMC en marche normale.";
+  if (a.vmc === "reduce")
+    return ventilation === "doubleFlow"
+      ? "Réduire la VMC : même en double flux, elle fait entrer l'air extérieur sans le sécher."
+      : "Réduire la VMC : une VMC simple flux fait entrer l'air extérieur jour et nuit.";
+  return null;
+}
+
+export function adviceText(a: Advice, profile: HouseProfile): AdviceText {
+  const gap = fmt(Math.abs(a.gap));
+  const vmc = vmcLine(a, profile.ventilation);
+  const lines: string[] = [];
+
+  if (a.code === "storm") {
+    lines.push("Fenêtres fermées.");
+    if (vmc) lines.push(vmc);
+    const surfaces = profile.coldSurfaces.map((s) => s.name);
+    lines.push(
+      surfaces.length > 0
+        ? `Faire tourner les déshumidificateurs, en priorité près de : ${list(surfaces)}.`
+        : "Faire tourner les déshumidificateurs dans les pièces sensibles.",
+    );
+    if (a.conflict)
+      lines.push(
+        `Les mesures seules diraient d'aérer (dehors plus sec de ${gap} g/m³) : la consigne d'orage l'emporte.`,
+      );
+    return { title: "Orage : garder fermé", tone: "alert", lines };
+  }
+
+  if (a.code === "drierOutside") {
+    lines.push(`L'air extérieur est plus sec de ${gap} g/m³ : aérer fait sortir de la vapeur d'eau.`);
+    const o = a.openings;
+    if (o && o.avoid.length > 0) {
+      const avoid = list(o.avoid.map((id) => facadeLabel(profile, id)));
+      lines.push(`Il a plu : ne pas ouvrir ${o.avoid.length > 1 ? "les façades" : "la façade"} ${avoid}.`);
+      if (o.prefer.length === 0)
+        lines.push(
+          vmc
+            ? "Toutes les façades donnent sur une zone humide : aérer par la VMC seule en attendant que ça sèche."
+            : "Toutes les façades donnent sur une zone humide : attendre que ça sèche.",
+        );
+      else {
+        const prefer = list(o.prefer.map((id) => facadeLabel(profile, id)));
+        lines.push(o.upstairsOnly ? `Ouvrir à l'étage, côté ${prefer}.` : `Ouvrir côté ${prefer}.`);
+      }
+    } else lines.push("Ouvrir les fenêtres en grand.");
+    if (vmc) lines.push(vmc);
+    return { title: vmc ? "Ouvrir + VMC à fond" : "Ouvrir les fenêtres", tone: "go", lines };
+  }
+
+  if (a.code === "wetterOutside") {
+    lines.push(`L'air extérieur est plus chargé de ${gap} g/m³ : aérer ferait entrer de la vapeur d'eau.`);
+    if (vmc) lines.push(vmc);
+    return { title: vmc ? "Garder fermé + réduire la VMC" : "Garder fermé", tone: "stop", lines };
+  }
+
+  lines.push(`Écart de ${gap} g/m³, dans la marge d'erreur des hygromètres : aérer ne change rien à l'humidité.`);
+  if (vmc) lines.push(vmc);
+  return { title: "Équilibre : au choix", tone: "neutral", lines };
+}
+
+export function surfaceText(c: SurfaceCheck): AdviceText {
+  const td = fmt(c.dewPoint);
+  const m = fmt(Math.abs(c.marginC));
+  if (c.atRisk)
+    return {
+      title: "Risque de condensation",
+      tone: "stop",
+      lines: [`La surface est ${m} °C sous le point de rosée de la pièce (${td} °C) : l'eau s'y dépose.`],
+    };
+  if (c.nearLimit)
+    return {
+      title: "À la limite",
+      tone: "alert",
+      lines: [
+        `Seulement ${m} °C au-dessus du point de rosée (${td} °C) : c'est dans la marge d'erreur du thermomètre.`,
+      ],
+    };
+  return {
+    title: "Pas de condensation",
+    tone: "go",
+    lines: [`${m} °C de marge au-dessus du point de rosée de la pièce (${td} °C).`],
+  };
+}
+
+/** The rules as printed on the reference sheet. */
+export const RULES: { situation: string; advice: string }[] = [
+  {
+    situation: "Humidité absolue dehors plus basse que dedans",
+    advice: "Ouvrir les fenêtres et mettre la VMC à fond.",
+  },
+  {
+    situation: "Humidité absolue dehors plus haute que dedans",
+    advice: "Garder fermé et réduire la VMC : une VMC simple flux fait entrer l'air extérieur jour et nuit.",
+  },
+  {
+    situation: "Écart de moins de 0,5 g/m³",
+    advice: "Équilibre : aérer ne change rien à l'humidité.",
+  },
+  {
+    situation: "Orage",
+    advice: "Garder fermé, réduire la VMC, déshumidificateurs près des surfaces froides.",
+  },
+  {
+    situation: "Après la pluie, ruisseau ou zone humide à proximité",
+    advice: "Ne pas ouvrir la façade côté ruisseau ; aérer à l'étage, du côté opposé.",
+  },
+  {
+    situation: "Surface plus froide que le point de rosée de la pièce",
+    advice: "L'eau s'y dépose : assécher l'air de la pièce (aérer si dehors est plus sec, déshumidificateur sinon).",
+  },
+];
