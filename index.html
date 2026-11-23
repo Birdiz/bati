@@ -8,8 +8,8 @@
       name="description"
       content="Savoir quand aérer une maison ancienne en pierre : humidité absolue dedans et dehors, point de rosée, surfaces froides. Fonctionne sans réseau."
     />
-    <meta name="theme-color" content="#f2ede3" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4efe2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#221d16" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -148,9 +148,11 @@
           <p id="surfaceResultTitle" class="advice-title">Saisir la température de la surface et l'air de la pièce.</p>
           <ul id="surfaceResultLines" class="advice-lines"></ul>
         </div>
-        <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
-        <p id="surfaceSaveNote" class="hint" hidden>Pour enregistrer, compléter aussi l'extérieur dans le relevé.</p>
-        <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
+        <div class="save">
+          <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
+          <p id="surfaceSaveNote" class="hint" hidden>Pour enregistrer, compléter aussi l'extérieur dans le relevé.</p>
+          <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
+        </div>
       </section>
 
       <!-- 2. House profile -->
