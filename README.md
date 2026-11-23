@@ -37,8 +37,8 @@ src/
   storage/            localStorage behind a key-value interface
   ui/                 screens, state, PWA registration
   sw.js               service worker (file list injected at build)
-  styles/app.css      visual identity "Pierre et chaux", on tokens (see .claude/skills/design)
-  fonts/              Alegreya and Alegreya Sans, latin woff2 (OFL), served with the app
+  styles/app.css      visual identity "Chaux et ocre", on tokens (see .claude/skills/design)
+  fonts/              Lora and Nunito Sans, latin woff2 (OFL), served with the app
 server/               static server for Railway (compression, cache, CSP), no API
 tests/                Vitest (domain + screens with jsdom)
 scripts/offline-check.ts  real offline check in Chromium
