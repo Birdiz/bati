@@ -11,7 +11,8 @@ import type { LogEntry } from "../domain/humidity/log";
 import { BACKUP_ERROR, CODE_LABEL, fmt } from "../text/fr";
 import { byId, downloadText, flash, h } from "./dom";
 import type { AppState } from "./state";
-import { mountTrend } from "./trend";
+import { mountSurfaceHistory } from "./surfaceHistory";
+import { carnetAxis, mountTrend } from "./trend";
 
 /** After this many days without a copy, the log screen reminds the user. */
 export const BACKUP_REMINDER_DAYS = 30;
@@ -88,6 +89,7 @@ export function mountLog(state: AppState): { show(): void } {
   const choice = byId("importChoice");
   let pending: Extract<ParsedBackup, { ok: true }> | null = null;
   const trend = mountTrend(state);
+  const surfaces = mountSurfaceHistory(state);
 
   function backupStatus(): string {
     if (!state.lastBackup) return state.log.length > 0 ? "Aucune copie enregistrée pour l'instant." : "";
@@ -100,6 +102,7 @@ export function mountLog(state: AppState): { show(): void } {
     byId("logEmpty").hidden = state.log.length > 0;
     byId("logTitle").hidden = state.log.length === 0;
     trend.render();
+    surfaces.render(carnetAxis(state), trend.width());
     byId("logList").replaceChildren(
       ...state.log.map((e) =>
         entryItem(e, () => {
@@ -162,5 +165,16 @@ export function mountLog(state: AppState): { show(): void } {
 
   setupInstall();
   state.subscribe(render);
+  // Charts are drawn at their real width: draw again when it changes (rotation, window resize).
+  let width = 0;
+  let frame = 0;
+  window.addEventListener("resize", () => {
+    cancelAnimationFrame(frame);
+    frame = requestAnimationFrame(() => {
+      if (byId("screen-carnet").hidden || trend.width() === width) return;
+      width = trend.width();
+      render();
+    });
+  });
   return { show: render };
 }

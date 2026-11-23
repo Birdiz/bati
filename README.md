@@ -6,8 +6,8 @@ Ventilation advice for old stone farmhouses in the Vosges: compare **absolute hu
 
 1. **Relevé** (quick check): indoor and outdoor temperature + RH → absolute humidity of both (drier side lightened, both on a g/m³ scale), indoor dew point, one advice.
 2. **Ma maison** (house profile): VMC type, facades (orientation, wet area, upstairs windows), known cold surfaces. The advice uses it ("ouvrir à l'étage, côté Jardin (sud-ouest)").
-3. **Surface froide**: a known surface and its temperature → condensation risk yes/no, margin in °C.
-4. **Carnet** (log): each check can be saved with a note; JSON backup export/import (merge or replace). A trend on top: the moisture excess (indoor − outdoor AH, the water the house adds to the air, season removed) per day, the last 14 days against the 14 before, and a chart over 30 / 90 days or the whole log.
+3. **Surface froide**: a known surface and its temperature → condensation risk yes/no, margin in °C, with a reminder of the last saved check of that surface.
+4. **Carnet** (log): each check can be saved with a note; JSON backup export/import (merge or replace). A trend on top: the moisture excess (indoor − outdoor AH, the water the house adds to the air, season removed) per day, the last 14 days against the 14 before, and a chart over 30 / 90 days or the whole log. Then each cold surface: days in condensation or near the limit over the same period, the worst margin, and a chart of the worst margin of each day.
 5. **Fiche**: printable sheet with the rules and an AH table, 5–40 °C × 30–100 % RH.
 
 ### Rules (field-validated)
@@ -31,14 +31,14 @@ index.html            the single page (screens switched by #releve, #surface, #m
 src/
   domain/             pure, no DOM, no French: runs in Node for the tests
     house/            house profile, the shared core (the materials side will extend it)
-    humidity/         formulas, advice rules, surface check, log, trend, reference table
+    humidity/         formulas, advice rules, surface check, log, trend, surface history, reference table
     backup.ts         JSON export/import
   text/fr.ts          French wording of the domain results
   storage/            localStorage behind a key-value interface
   ui/                 screens, state, PWA registration
   sw.js               service worker (file list injected at build)
-  styles/app.css      visual identity "Pierre et chaux", on tokens (see .claude/skills/design)
-  fonts/              Alegreya and Alegreya Sans, latin woff2 (OFL), served with the app
+  styles/app.css      visual identity "Chaux et ocre", on tokens (see .claude/skills/design)
+  fonts/              Lora and Nunito Sans, latin woff2 (OFL), served with the app
 server/               static server for Railway (compression, cache, CSP), no API
 tests/                Vitest (domain + screens with jsdom)
 scripts/offline-check.ts  real offline check in Chromium

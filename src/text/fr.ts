@@ -9,6 +9,7 @@ import { type AdviceCode, NEUTRAL_BAND } from "../domain/humidity/advice";
 import { COMPARE_DAYS, type DayPoint, type ExcessTrend, MIN_DAYS, type TrendWindow } from "../domain/humidity/trend";
 import type { ReadingError } from "../domain/humidity/psychrometrics";
 import type { SurfaceCheck } from "../domain/humidity/surface";
+import type { SurfaceDay, SurfaceStatus, SurfaceSummary } from "../domain/humidity/surfaceHistory";
 
 /** One decimal, French comma, no "-0,0". */
 export function fmt(x: number, digits = 1): string {
@@ -231,6 +232,43 @@ export function trendText(t: ExcessTrend): AdviceText {
     tone: "alert",
     lines: [figures, "À usage comparable, la maison rend plus d'eau à l'air qu'avant."],
   };
+}
+
+/** Period of the log shown, as the start of a sentence: "Sur les 90 derniers jours". */
+export function windowPhrase(w: TrendWindow): string {
+  return w === "all" ? "Depuis le premier relevé" : `Sur les ${w} derniers jours`;
+}
+
+const checkedDays = (n: number) => `${n} jour${n > 1 ? "s" : ""} vérifié${n > 1 ? "s" : ""}`;
+
+const STATUS_WORDS: Record<SurfaceStatus, string> = {
+  atRisk: "condensation",
+  nearLimit: "à la limite",
+  ok: "pas de condensation",
+};
+
+/** Summary of a cold surface over the period shown; the tone follows the worst day. */
+export function surfaceHistoryText(s: SurfaceSummary, w: TrendWindow, worstDate: string): AdviceText {
+  const lines = [
+    `${windowPhrase(w)} : ${checkedDays(s.days)}, ${s.atRisk} en condensation, ${s.nearLimit} à la limite.`,
+    `Marge la plus basse : ${fmt(s.worst.marginC)} °C le ${worstDate} (surface à ${fmt(s.worst.tempC)} °C).`,
+  ];
+  if (s.atRisk > 0) return { title: `Condensation ${days(s.atRisk)} sur ${s.days}`, tone: "stop", lines };
+  if (s.nearLimit > 0) return { title: `À la limite ${days(s.nearLimit)} sur ${s.days}`, tone: "alert", lines };
+  return { title: "Pas de condensation", tone: "go", lines };
+}
+
+/** Reminder on the cold surface screen: the last saved check of the chosen surface. */
+export function lastCheckText(daysAgo: number, marginC: number, status: SurfaceStatus): string {
+  const when = daysAgo <= 0 ? "aujourd'hui" : daysAgo === 1 ? "hier" : `il y a ${daysAgo} jours`;
+  return `Dernière vérification enregistrée : ${when}, ${STATUS_WORDS[status]} (marge ${fmt(marginC)} °C).`;
+}
+
+/** Accessible name of a cold surface chart. */
+export function surfaceChartLabel(name: string, list: readonly SurfaceDay[], from: string, to: string): string {
+  const last = list.at(-1);
+  if (!last) return "";
+  return `Marge de ${name} au-dessus du point de rosée, ${checkedDays(list.length)} du ${from} au ${to}. Dernière : ${fmt(last.marginC)} °C, ${STATUS_WORDS[last.status]}.`;
 }
 
 /** Accessible name of the trend chart: what a screen reader announces instead of the curves. */

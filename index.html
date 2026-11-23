@@ -8,8 +8,8 @@
       name="description"
       content="Savoir quand aérer une maison ancienne en pierre : humidité absolue dedans et dehors, point de rosée, surfaces froides. Fonctionne sans réseau."
     />
-    <meta name="theme-color" content="#f2ede3" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#1a1815" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f4efe2" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#221d16" media="(prefers-color-scheme: dark)" />
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" href="favicon.svg" type="image/svg+xml" />
     <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
@@ -159,6 +159,7 @@
             Aucune surface froide enregistrée. <a href="#maison">Les ajouter dans Ma maison</a>, ou vérifier une autre
             surface.
           </p>
+          <p id="surfaceLast" class="hint" hidden></p>
           <div class="signed">
             <label
               >Température de la surface <span class="unit">°C</span>
@@ -206,9 +207,13 @@
             </p>
             <ul id="surfaceResultLines" class="advice-lines"></ul>
           </div>
-          <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
-          <p id="surfaceSaveNote" class="hint" hidden>Pour enregistrer, compléter aussi l'extérieur dans le relevé.</p>
-          <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
+          <div class="save">
+            <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
+            <p id="surfaceSaveNote" class="hint" hidden>
+              Pour enregistrer, compléter aussi l'extérieur dans le relevé.
+            </p>
+            <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
+          </div>
         </div>
       </section>
 
@@ -276,7 +281,7 @@
         <h2 id="carnetTitle">Carnet</h2>
         <p id="logEmpty" class="hint">Aucun relevé enregistré. Les relevés restent sur cet appareil.</p>
 
-        <div class="col">
+        <div id="carnetCharts" class="col">
           <section id="trend" aria-labelledby="trendTitle" hidden>
             <h3 id="trendTitle">Tendance</h3>
             <div id="trendWindows" class="segmented" role="group" aria-label="Période"></div>
@@ -302,6 +307,16 @@
               l'air (murs, sol, occupants), sans l'effet de la saison. Pour comparer, prenez vos relevés dans les mêmes
               conditions, pas juste après une douche ou une cuisson. Un point par jour : la moyenne de ses relevés.
             </p>
+          </section>
+
+          <section id="surfaces" aria-labelledby="surfacesTitle" hidden>
+            <h3 id="surfacesTitle">Surfaces froides</h3>
+            <p class="hint">
+              Un point par jour : la pire marge du jour au-dessus du point de rosée. Sous 0 °C (rouge), l'eau se dépose
+              ; jusqu'à 1 °C (ocre), c'est dans l'imprécision du thermomètre. La marge suit aussi le froid de la saison
+              : un plancher sur cave baisse tout l'hiver sans que rien ne se dégrade.
+            </p>
+            <div id="surfaceHistories"></div>
           </section>
 
           <h3>Sauvegarde</h3>

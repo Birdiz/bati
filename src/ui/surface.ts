@@ -1,13 +1,16 @@
 /** Screen 3: cold surface check. A known surface and its temperature → condensation risk and margin. */
 import { decideAdvice } from "../domain/humidity/advice";
 import { createEntry } from "../domain/humidity/log";
-import { checkSurface } from "../domain/humidity/surface";
-import { READING_ERROR, parseDecimal, surfaceText } from "../text/fr";
+import { OTHER_SURFACE_ID, checkSurface } from "../domain/humidity/surface";
+import { lastSurfaceCheck } from "../domain/humidity/surfaceHistory";
+import { daysBetween } from "../domain/humidity/trend";
+import { READING_ERROR, lastCheckText, parseDecimal, surfaceText } from "../text/fr";
+import { localDay } from "./chart";
 import { byId, flash, h, showAdvice } from "./dom";
 import { type AppState, draftInput, parseReading, pendingField } from "./state";
 
 /** Value of the "other surface" option: a check on a surface that is not in the profile. */
-export const OTHER_SURFACE = "autre";
+export const OTHER_SURFACE = OTHER_SURFACE_ID;
 
 export function mountSurface(state: AppState): { show(): void } {
   const select = byId<HTMLSelectElement>("surfaceId");
@@ -36,7 +39,18 @@ export function mountSurface(state: AppState): { show(): void } {
     return { tempC: t, check: checkSurface(t, indoor) };
   }
 
+  /** The last saved check of the chosen surface, to compare with before measuring again. */
+  function showLast(): void {
+    const last = lastSurfaceCheck(state.log, select.value);
+    const p = byId("surfaceLast");
+    p.hidden = !last;
+    p.textContent = last
+      ? lastCheckText(daysBetween(localDay(last.at), localDay(state.now().toISOString())), last.marginC, last.status)
+      : "";
+  }
+
   function render(): void {
+    showLast();
     const raw = state.draft.surfaceT;
     const err = !pendingField(raw) && Number.isNaN(parseDecimal(raw));
     const p = byId("surfaceT-error");
@@ -91,6 +105,7 @@ export function mountSurface(state: AppState): { show(): void } {
         },
       }),
     );
+    showLast();
     flash(
       byId("surfaceSaveStatus"),
       state.stored ? "Enregistré dans le carnet." : "Gardé pour cette session seulement.",
