@@ -5,6 +5,7 @@ import { checkSurface } from "../src/domain/humidity/surface";
 import {
   adviceText,
   fmt,
+  isUnfinishedNumber,
   lastCheckText,
   list,
   parseDecimal,
@@ -47,8 +48,21 @@ describe("fmt / parseDecimal", () => {
     expect(parseDecimal("12,5")).toBe(12.5);
     expect(parseDecimal(" 21.3 ")).toBe(21.3);
     expect(parseDecimal("-4")).toBe(-4);
+    expect(parseDecimal("\u22123,5")).toBe(-3.5);
+    expect(parseDecimal("\u2013 2")).toBe(-2);
+    expect(parseDecimal("+7")).toBe(7);
+    expect(parseDecimal("-")).toBeNaN();
+    expect(parseDecimal("--4")).toBeNaN();
     expect(parseDecimal("12abc")).toBeNaN();
     expect(parseDecimal("")).toBeNaN();
+  });
+
+  it("tells a number still being typed from a wrong one", () => {
+    expect(isUnfinishedNumber("-")).toBe(true);
+    expect(isUnfinishedNumber(" \u2212, ")).toBe(true);
+    expect(isUnfinishedNumber("")).toBe(false);
+    expect(isUnfinishedNumber("-4")).toBe(false);
+    expect(isUnfinishedNumber("abc")).toBe(false);
   });
 
   it("joins lists the French way", () => {

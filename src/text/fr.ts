@@ -17,10 +17,22 @@ export function fmt(x: number, digits = 1): string {
   return (Number(s) === 0 ? (0).toFixed(digits) : s).replace(".", ",");
 }
 
-/** Parses a number typed with a comma or a dot; NaN if it is not exactly a number. */
+/** Minus signs a keyboard may produce: hyphen, true minus (U+2212), en dash (smart punctuation). */
+const MINUS = /^[-\u2212\u2013]\s*/;
+
+/** Parses a number typed with a comma or a dot, and any minus sign; NaN if it is not exactly a number. */
 export function parseDecimal(s: string): number {
-  const t = s.trim().replace(",", ".");
+  const t = s
+    .trim()
+    .replace(MINUS, "-")
+    .replace(/^\+\s*/, "")
+    .replace(",", ".");
   return /^-?(\d+\.?\d*|\.\d+)$/.test(t) ? Number(t) : Number.NaN;
+}
+
+/** A number still being typed ("-", "-,"): no value yet, but no error to show either. */
+export function isUnfinishedNumber(s: string): boolean {
+  return /^[-\u2212\u2013+]\s*[.,]?$/.test(s.trim());
 }
 
 export const ORIENTATION_LABEL: Record<Orientation, string> = {

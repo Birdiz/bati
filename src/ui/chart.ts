@@ -144,8 +144,9 @@ export function dayChart<T extends Dated>(c: DayChart<T>): SVGSVGElement {
 const FIGURE_INSET = 19;
 
 /**
- * Width to draw a chart at, from the content width of the screen that holds it: every chart of the Carnet gets
- * the same, even while the trend chart itself is hidden. jsdom and a hidden screen measure 0: a phone width then.
+ * Width to draw a chart at, from the content width of the column that holds the charts (the whole screen on a
+ * phone, its left half on a wide screen): every chart of the Carnet gets the same, even while the trend chart
+ * itself is hidden. jsdom and a hidden screen measure 0: a phone width then.
  */
 export function chartWidth(screen: HTMLElement): number {
   const w = Math.round(screen.clientWidth);

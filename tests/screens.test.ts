@@ -132,6 +132,23 @@ describe("quick check", () => {
     expect($("#advice").dataset.tone).toBe("empty");
   });
 
+  it("takes a negative temperature from the ± button, with no error while only the sign is typed", () => {
+    fillCheck();
+    type("#outdoorT", "-");
+    expect($("#outdoorT-error").hidden).toBe(true);
+    type("#outdoorT", "4");
+    const sign = $<HTMLButtonElement>('[data-sign-for="outdoorT"]');
+    sign.click();
+    expect($<HTMLInputElement>("#outdoorT").value).toBe("\u22124");
+    expect(sign.getAttribute("aria-pressed")).toBe("true");
+    expect(document.activeElement).toBe($("#outdoorT"));
+    expect(text("#outdoorAH")).toBe("2,9 g/m³");
+    expect($("#outdoorT-error").hidden).toBe(true);
+    sign.click();
+    expect($<HTMLInputElement>("#outdoorT").value).toBe("4");
+    expect(sign.getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("follows the storm switch", () => {
     fillCheck();
     tick("#storm");

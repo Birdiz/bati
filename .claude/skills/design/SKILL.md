@@ -46,9 +46,26 @@ Lora 500/600 (titles, legends, verdict title, scale gap, dew point line), never 
 - Where: tab bar (icon above the label, 25 px, thicker stroke on the current tab), field labels and legends in `--accent` (thermometer, droplet, house inside, fir tree outside, wall for a cold surface, cube for absolute humidity), switches in `--muted` turning `--accent` when on (storm cloud, rain), h3 with `.with-icon`, buttons, and the verdict badge (`VERDICT_ICON` in `src/ui/check.ts`: wind to air, window to keep shut, storm, balance).
 - Icons are decoration: the text next to them always says the same thing. Never an icon alone as the only label.
 
+## Temperature fields: the "±" button
+
+Phone decimal keypads (`inputmode="decimal"` on iPhone) have no minus key. Every temperature field sits in a `.signed` wrapper with a `.sign-toggle` button `[data-sign-for="<input id>"]` (`src/ui/sign.ts`): it flips the sign with a true minus (`toggleSign`), hands the focus back, and its `aria-pressed` says whether the value is negative. The button is outside the `<label>` so its name does not join the field's, and overlays the label's bottom right so the label text keeps the full width. Parsing accepts hyphen, true minus and en dash; a lone sign is "still being typed": no error (`isUnfinishedNumber`, `pendingField`).
+
+## Layout
+
+- Phones and tablets in portrait: one column, 720 px at most, tab bar fixed at the bottom.
+- `@media screen and (min-width: 1024px)`: content up to 1200 px; the header (which holds the `nav.tabs` in the markup) becomes a sticky top bar, `--top-h` high, tabs on the right, icon beside the label (21 px), the current one underlined.
+  - `.split` (Relevé, Surface): inputs in a 7fr column, `.aside` (verdict, then save) in a 5fr column, `position: sticky` under the top bar, so the verdict stays in view when the page scrolls.
+  - `.columns` (Maison, Carnet): two `.col` halves; what comes before them spans both. Carnet: trend and backup left, entries right; an empty log falls back to one 720 px column.
+  - Fiche: rules beside the AH table.
+- Zero scroll is a goal, not a rule: Carnet and a long Maison scroll the page, never an inner box.
+
+## Motion
+
+Short and eased out (`--ease`, `--quick` 0.18 s, `--calm` 0.35 s), there to show what changed, never decoration. A screen rises in when shown; new pieces of a result fade in (scale, save form, errors, flash, tags pop); tones, drier panel, scale markers and band glide to their new value; the trend series are revealed left to right. A new verdict title moves in through `enter()` (`src/ui/dom.ts`, Web Animations API), only when the title text changes. Entrance animations use `backwards` fill, so no transform or clip stays applied afterwards (a lasting transform would break `position: fixed` and sticky descendants). Everything is cut by `prefers-reduced-motion: reduce`, in CSS and in `enter()`.
+
 ## Constraints
 
 - The CSP has no `'unsafe-inline'` for styles: no `style=""` in markup or `setAttribute("style")`. Positions computed in scripts go through custom properties set with `el.style.setProperty("--pos", …)` (CSSOM, allowed).
 - Components that set `display` rely on the global `[hidden] { display: none !important }`.
-- Fields stay large (56 px for readings, 28 px figures): the app is read standing in a room, phone in hand.
+- Fields stay large (56 px for readings, 28 px figures): the app is read standing in a room, phone in hand. On wide screens the layout widens; fields keep their size.
 - Print (Fiche): black on white, no tab bar, unchanged by the identity.

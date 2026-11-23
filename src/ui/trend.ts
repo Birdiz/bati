@@ -63,7 +63,7 @@ export function mountTrend(state: AppState): { render(): void; width(): number }
         points,
         start: axis.start,
         end: axis.end,
-        width: chartWidth(byId("screen-carnet")),
+        width: chartWidth(byId("carnetCharts")),
         height: 210,
         series: SERIES,
         label: trendChartLabel(points, shortDate(points[0]!.day), shortDate(points.at(-1)!.day)),
@@ -71,5 +71,5 @@ export function mountTrend(state: AppState): { render(): void; width(): number }
     );
   }
 
-  return { render, width: () => chartWidth(byId("screen-carnet")) };
+  return { render, width: () => chartWidth(byId("carnetCharts")) };
 }

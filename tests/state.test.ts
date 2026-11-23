@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { emptyProfile } from "../src/domain/house/profile";
 import { KEYS, type KeyValue, loadData, memoryStorage } from "../src/storage/device";
-import { AppState, draftInput, emptyDraft, parseReading } from "../src/ui/state";
+import { AppState, draftInput, emptyDraft, isNegative, parseReading, toggleSign } from "../src/ui/state";
 
 const fixedNow = () => new Date("2026-11-22T08:00:00Z");
 let n = 0;
@@ -16,6 +16,24 @@ describe("parseReading", () => {
     expect(parseReading("", "")).toMatchObject({ reading: null, t: null, rh: null, empty: true });
     expect(parseReading("12abc", "120")).toMatchObject({ reading: null, t: "notANumber", rh: "humidityOutOfRange" });
     expect(parseReading("60", "0")).toMatchObject({ t: "temperatureOutOfRange", rh: "humidityOutOfRange" });
+  });
+
+  it("accepts negative temperatures, and waits while only the sign is typed", () => {
+    expect(parseReading("\u22125,5", "90").reading).toEqual({ t: -5.5, rh: 90 });
+    expect(parseReading("-", "90")).toMatchObject({ reading: null, t: null, empty: true });
+    expect(parseReading("-45", "90").t).toBe("temperatureOutOfRange");
+  });
+});
+
+describe("toggleSign", () => {
+  it("adds or removes the minus sign, whichever the keyboard typed", () => {
+    expect(toggleSign("4,5")).toBe("\u22124,5");
+    expect(toggleSign("")).toBe("\u2212");
+    expect(toggleSign("\u22124,5")).toBe("4,5");
+    expect(toggleSign(" -3 ")).toBe("3");
+    expect(toggleSign("+2")).toBe("\u22122");
+    expect(isNegative("\u22122")).toBe(true);
+    expect(isNegative("2")).toBe(false);
   });
 });
 
