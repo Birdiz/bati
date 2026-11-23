@@ -22,7 +22,7 @@ jobs:
       - uses: ./.github/actions/setup
       - run: npm test
 
-  # What Railway runs and probes, then the real offline check in Chromium.
+  # What Railway runs and probes, then the real offline and update checks in Chromium.
   offline:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -42,6 +42,7 @@ jobs:
             curl --fail --silent --show-error --output /dev/null --write-out "$page %{http_code}\n" "http://localhost:3000$page"
           done
       - run: npm run test:offline
+      - run: npm run test:update
       - uses: actions/upload-artifact@v7
         if: ${{ !cancelled() }}
         with:

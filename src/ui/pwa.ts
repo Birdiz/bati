@@ -33,11 +33,22 @@ export function startPWA(): void {
       reloadNow = true;
       start.postMessage("activate");
     }
+    // A reload or a closed tab also hides the page. Activating then races the navigation: the next page is
+    // already served by the old worker and finds nothing waiting, so a reload on desktop showed the old
+    // version again. When leaving, the next launch activates the waiting version before anything is seen.
+    let leaving = false;
+    addEventListener("pagehide", () => (leaving = true));
+    addEventListener("pageshow", () => (leaving = false));
     let checked = Date.now();
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
-        if (swapped) location.reload();
-        else waiting()?.postMessage("activate");
+        // Deferred: browsers fire pagehide and visibilitychange in either order, and a task queued while
+        // unloading never runs.
+        setTimeout(() => {
+          if (leaving || !document.hidden) return;
+          if (swapped) location.reload();
+          else waiting()?.postMessage("activate");
+        });
       } else if (Date.now() - checked > HOUR) {
         // An installed app can stay open for days without reloading.
         checked = Date.now();
