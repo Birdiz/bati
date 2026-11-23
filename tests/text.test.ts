@@ -2,7 +2,17 @@ import { describe, expect, it } from "vitest";
 import type { Facade, HouseProfile } from "../src/domain/house/profile";
 import { type CheckInput, decideAdvice } from "../src/domain/humidity/advice";
 import { checkSurface } from "../src/domain/humidity/surface";
-import { adviceText, fmt, list, parseDecimal, signed, surfaceText, trendText } from "../src/text/fr";
+import {
+  adviceText,
+  fmt,
+  lastCheckText,
+  list,
+  parseDecimal,
+  signed,
+  surfaceHistoryText,
+  surfaceText,
+  trendText,
+} from "../src/text/fr";
 
 const facade = (id: string, name: string, orientation: Facade["orientation"], wet = false, up = false): Facade => ({
   id,
@@ -141,5 +151,43 @@ describe("trendText", () => {
     expect(signed(0.04)).toBe("0,0");
     expect(signed(-0.04)).toBe("0,0");
     expect(signed(1.25)).toBe("+1,3");
+  });
+});
+
+describe("surfaceHistoryText", () => {
+  const worst = { day: "2026-11-12", marginC: -0.4, tempC: 11.6, status: "atRisk" as const, checks: 1 };
+
+  it("leads with condensation, in red, when one day condensed", () => {
+    const t = surfaceHistoryText({ days: 12, atRisk: 2, nearLimit: 3, worst }, "90", "12 nov.");
+    expect(t).toMatchObject({ title: "Condensation 2 jours sur 12", tone: "stop" });
+    expect(t.lines).toEqual([
+      "Sur les 90 derniers jours : 12 jours vérifiés, 2 en condensation, 3 à la limite.",
+      "Marge la plus basse : -0,4 °C le 12 nov. (surface à 11,6 °C).",
+    ]);
+  });
+
+  it("says near the limit in ochre, or no condensation in green", () => {
+    const near = { ...worst, marginC: 0.6, status: "nearLimit" as const };
+    expect(surfaceHistoryText({ days: 1, atRisk: 0, nearLimit: 1, worst: near }, "30", "12 nov.")).toMatchObject({
+      title: "À la limite 1 jour sur 1",
+      tone: "alert",
+    });
+    const ok = surfaceHistoryText(
+      { days: 4, atRisk: 0, nearLimit: 0, worst: { ...worst, marginC: 2 } },
+      "all",
+      "1 oct.",
+    );
+    expect(ok).toMatchObject({ title: "Pas de condensation", tone: "go" });
+    expect(ok.lines[0]).toBe("Depuis le premier relevé : 4 jours vérifiés, 0 en condensation, 0 à la limite.");
+  });
+});
+
+describe("lastCheckText", () => {
+  it("says when, the status and the margin", () => {
+    expect(lastCheckText(0, 2.1, "ok")).toBe(
+      "Dernière vérification enregistrée : aujourd'hui, pas de condensation (marge 2,1 °C).",
+    );
+    expect(lastCheckText(1, 0.4, "nearLimit")).toContain(": hier, à la limite (marge 0,4 °C).");
+    expect(lastCheckText(3, -0.2, "atRisk")).toContain(": il y a 3 jours, condensation (marge -0,2 °C).");
   });
 });

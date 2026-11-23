@@ -296,6 +296,103 @@ describe("log trend", () => {
   });
 });
 
+describe("cold surface history", () => {
+  /** A stored check of a surface at noon UTC, margin as given. */
+  const checkOf = (day: string, surfaceId: string, name: string, marginC: number) => ({
+    id: `s-${day}-${surfaceId}-${marginC}`,
+    at: `${day}T12:00:00.000Z`,
+    indoor: { t: 20, rh: 60 },
+    outdoor: { t: 4, rh: 85 },
+    conditions: { storm: false, recentRain: false },
+    computed: { indoorAH: 10, outdoorAH: 5.5, indoorDewPoint: 12, code: "drierOutside", formula: "test" },
+    surface: { surfaceId, name, tempC: 12 + marginC, marginC, atRisk: marginC <= 0 },
+  });
+  const profile = {
+    version: 1,
+    ventilation: "singleFlow",
+    facades: [],
+    coldSurfaces: [{ id: "floor", name: "Plancher du salon", location: "au-dessus de la cave" }],
+  };
+  const floor = [
+    checkOf("2026-11-10", "floor", "Plancher du salon", 2.4),
+    checkOf("2026-11-12", "floor", "Plancher du salon", -0.4),
+    checkOf("2026-11-12", "floor", "Plancher du salon", 1.5),
+    checkOf("2026-11-18", "floor", "Plancher du salon", 0.6),
+    checkOf("2026-11-21", "floor", "Plancher du salon", 1.8),
+  ];
+
+  function startWith(entries: ReturnType<typeof checkOf>[], screen: "carnet" | "surface" = "carnet"): void {
+    document.body.innerHTML = body;
+    store = memoryStorage({ [KEYS.log]: JSON.stringify(entries), [KEYS.profile]: JSON.stringify(profile) });
+    app = startApp(
+      new AppState(
+        store,
+        () => new Date("2026-11-22T12:00:00Z"),
+        () => `id-${++n}`,
+      ),
+    );
+    app.go(screen);
+  }
+
+  it("is absent without surface checks", () => {
+    fillCheck();
+    $<HTMLFormElement>("#saveForm").requestSubmit();
+    app.go("carnet");
+    expect($("#trend").hidden).toBe(false);
+    expect($("#surfaces").hidden).toBe(true);
+  });
+
+  it("sums up each surface on its worst day and draws the margin with the risk zones", () => {
+    startWith([
+      ...floor,
+      checkOf("2026-11-20", "gone", "Seuil de la cave", 3),
+      checkOf("2026-11-20", "autre", "Autre surface", -3),
+    ]);
+    const blocks = document.querySelectorAll<HTMLElement>("#surfaceHistories article");
+    expect([...blocks].map((b) => b.dataset.surface)).toEqual(["floor", "gone"]);
+    const f = blocks[0]!;
+    expect(f.querySelector("h4")?.textContent).toBe("Plancher du salon");
+    expect(f.querySelector(".advice")?.getAttribute("data-tone")).toBe("stop");
+    expect(f.querySelector(".advice-title")?.textContent).toBe("Condensation 1 jour sur 4");
+    expect(f.querySelector(".advice-lines")?.textContent).toContain(
+      "Sur les 90 derniers jours : 4 jours vérifiés, 1 en condensation, 1 à la limite.",
+    );
+    expect(f.querySelector(".advice-lines")?.textContent).toContain("-0,4 °C le 12 nov. (surface à 11,6 °C)");
+    const dots = [...f.querySelectorAll("circle")].map((c) => c.getAttribute("data-status"));
+    expect(dots).toEqual(["ok", "atRisk", "nearLimit", "ok"]);
+    expect([...f.querySelectorAll(".bands rect")].map((r) => r.getAttribute("data-tone"))).toEqual(["stop", "alert"]);
+    expect(f.querySelector("svg")?.getAttribute("aria-label")).toContain("Dernière : 1,8 °C, pas de condensation.");
+
+    const gone = blocks[1]!;
+    expect(gone.querySelector("h4")?.textContent).toBe("Seuil de la cave (retirée de Ma maison)");
+    expect(gone.querySelector(".advice")?.getAttribute("data-tone")).toBe("go");
+    expect(gone.querySelector("svg")).toBeNull(); // one day: the summary says it all
+  });
+
+  it("follows the period of the trend", () => {
+    startWith([checkOf("2026-09-01", "gone", "Seuil de la cave", 3), ...floor]);
+    $('[data-window="30"]').click();
+    const gone = $('[data-surface="gone"]');
+    expect(gone.textContent).toContain("Aucune vérification sur cette période.");
+    $('[data-window="all"]').click();
+    expect($('[data-surface="gone"] .advice-title').textContent).toBe("Pas de condensation");
+  });
+
+  it("reminds the last saved check of the chosen surface before measuring again", () => {
+    startWith(floor, "surface");
+    expect($<HTMLSelectElement>("#surfaceId").value).toBe("floor");
+    expect(text("#surfaceLast")).toBe("Dernière vérification enregistrée : hier, pas de condensation (marge 1,8 °C).");
+    choose("#surfaceId", "autre");
+    expect($("#surfaceLast").hidden).toBe(true);
+    choose("#surfaceId", "floor");
+    fillCheck();
+    app.go("surface");
+    type("#surfaceT", "15");
+    $<HTMLButtonElement>("#surfaceSave").click();
+    expect(text("#surfaceLast")).toContain(": aujourd'hui, ");
+  });
+});
+
 describe("reference sheet", () => {
   it("fills the rules and the 5–40 °C table", () => {
     app.go("fiche");

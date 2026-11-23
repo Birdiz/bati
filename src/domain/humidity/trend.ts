@@ -66,21 +66,26 @@ export function dailyPoints(log: readonly LogEntry[], dayOf: (at: string) => str
     });
 }
 
+/** Anything placed on a calendar day: the trend's points, a surface's days. */
+export interface Dated {
+  day: string;
+}
+
 /** First day shown for a window ending today; for "all", the first day with readings. */
-export function windowStart(points: readonly DayPoint[], window: TrendWindow, today: string): string {
+export function windowStart(points: readonly Dated[], window: TrendWindow, today: string): string {
   if (window === "all") return points[0]?.day ?? today;
   return addDays(today, -(Number(window) - 1));
 }
 
-export function inWindow(points: readonly DayPoint[], window: TrendWindow, today: string): DayPoint[] {
+export function inWindow<T extends Dated>(points: readonly T[], window: TrendWindow, today: string): T[] {
   const start = windowStart(points, window, today);
   return points.filter((p) => p.day >= start);
 }
 
 /** Runs of points to join with a line, split where two days with readings are more than MAX_GAP_DAYS apart. */
-export function segments(points: readonly DayPoint[]): DayPoint[][] {
-  const runs: DayPoint[][] = [];
-  let run: DayPoint[] = [];
+export function segments<T extends Dated>(points: readonly T[]): T[][] {
+  const runs: T[][] = [];
+  let run: T[] = [];
   for (const p of points) {
     const last = run[run.length - 1];
     if (last && daysBetween(last.day, p.day) > MAX_GAP_DAYS) {

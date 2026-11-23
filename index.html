@@ -126,6 +126,7 @@
             Aucune surface froide enregistrée. <a href="#maison">Les ajouter dans Ma maison</a>, ou vérifier une autre
             surface.
           </p>
+          <p id="surfaceLast" class="hint" hidden></p>
           <label
             >Température de la surface <span class="unit">°C</span>
             <input id="surfaceT" type="text" inputmode="decimal" />
@@ -233,6 +234,16 @@
             l'air (murs, sol, occupants), sans l'effet de la saison. Pour comparer, prenez vos relevés dans les mêmes
             conditions, pas juste après une douche ou une cuisson. Un point par jour : la moyenne de ses relevés.
           </p>
+        </section>
+
+        <section id="surfaces" aria-labelledby="surfacesTitle" hidden>
+          <h3 id="surfacesTitle">Surfaces froides</h3>
+          <p class="hint">
+            Un point par jour : la pire marge du jour au-dessus du point de rosée. Sous 0 °C (rouge), l'eau se dépose ;
+            jusqu'à 1 °C (ocre), c'est dans l'imprécision du thermomètre. La marge suit aussi le froid de la saison : un
+            plancher sur cave baisse tout l'hiver sans que rien ne se dégrade.
+          </p>
+          <div id="surfaceHistories"></div>
         </section>
 
         <h3 id="logTitle" hidden>Relevés</h3>

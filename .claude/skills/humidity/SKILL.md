@@ -44,6 +44,15 @@ Question: does the house give less water to the air over time? Indoor AH alone m
 - Chart windows 30 / 90 days (default) / all; lines broken over gaps of more than 7 days (`MAX_GAP_DAYS`), points always drawn: nothing is drawn where nothing was measured.
 - Not recorded, so not shown: whether an advice was followed.
 
+## Cold surface history (`surfaceHistory.ts`, Carnet and Surface froide)
+
+Question: how often was each surface condensing, or close to it, and when? **No "better or worse" verdict**: the margin follows the weather as much as the house (a floor above an unheated cellar cools with the cellar all winter). The EN ISO 13788 temperature factor would remove that but needs the cold-side temperature (the cellar's), which is not measured; computed with the outdoor temperature it would be wrong for the commonest case: do not add it without a cellar reading. Decided 2026-11-23:
+
+- One value per day and surface: the **worst** margin of the day (one check in condensation marks the day), with the surface temperature of that check. Status from the margin with the thresholds of `checkSurface` (≤ 0 condensation, < `NEAR_LIMIT_C` near the limit).
+- Summary over the period shown (same 30 / 90 / all as the trend): days checked, days in condensation, days near the limit, worst margin and its date. Tone of the worst case: stop, alert, else go.
+- Surfaces of the profile in its order, then removed ones (last saved name, "retirée de Ma maison"). "Autre surface" checks (`OTHER_SURFACE_ID`) are left out: different surfaces share that id.
+- The cold surface screen reminds the last saved check of the chosen surface (when, status, margin).
+
 ## Out of scope for now
 
 Tradesperson side, sensors, weather API, accounts, sync, insulation material recommendations. The house profile (`src/domain/house`) is where the materials side will plug in.
