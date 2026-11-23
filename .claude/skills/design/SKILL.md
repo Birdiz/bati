@@ -39,6 +39,13 @@ Lora 500/600 (titles, legends, verdict title, scale gap, dew point line), never 
 - Every chart of the Carnet shares the same horizontal axis (same period, `carnetAxis`) and the same width (content width of the Carnet screen minus the figure's inset), redrawn on resize.
 - Surface froide screen: the reminder `#surfaceLast` is a muted hint under the surface picker.
 
+## Icons
+
+- One inline sprite at the top of `<body>` (`svg.sprite`, `<symbol id="i-…">`), used with `<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-…" /></svg>`. Inline because the app is offline and the CSP has no `'unsafe-inline'` for styles: no icon font, no external file to cache.
+- Drawing: 24 px grid, line only (1.75 stroke, round caps and joins, `stroke: currentColor` set on `.icon`), small fills with `fill="currentColor" stroke="none"`. Same pared-down geometry as `.brand-mark`. Size in `em`, so an icon follows the text it sits in.
+- Where: tab bar (icon above the label, 25 px, thicker stroke on the current tab), field labels and legends in `--accent` (thermometer, droplet, house inside, fir tree outside, wall for a cold surface, cube for absolute humidity), switches in `--muted` turning `--accent` when on (storm cloud, rain), h3 with `.with-icon`, buttons, and the verdict badge (`VERDICT_ICON` in `src/ui/check.ts`: wind to air, window to keep shut, storm, balance).
+- Icons are decoration: the text next to them always says the same thing. Never an icon alone as the only label.
+
 ## Constraints
 
 - The CSP has no `'unsafe-inline'` for styles: no `style=""` in markup or `setAttribute("style")`. Positions computed in scripts go through custom properties set with `el.style.setProperty("--pos", …)` (CSSOM, allowed).
