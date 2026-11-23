@@ -18,6 +18,10 @@ export interface SurfaceRecord {
   tempC: number;
   marginC: number;
   atRisk: boolean;
+  /** Relative humidity at the surface, %. Missing on entries saved before it was computed. */
+  surfaceRH?: number;
+  /** Declared absorbent in the profile at the time: changing the material later does not rewrite the past. */
+  absorbent: boolean;
 }
 
 export interface LogEntry {
@@ -69,7 +73,9 @@ export function createEntry(input: CheckInput, advice: Advice, meta: EntryMeta):
       name: s.name,
       tempC: s.tempC,
       marginC: s.check.marginC,
-      atRisk: s.check.atRisk,
+      atRisk: s.check.status === "atRisk",
+      surfaceRH: s.check.surfaceRH,
+      absorbent: s.check.absorbent,
     };
   }
   return entry;
@@ -91,7 +97,19 @@ function surfaceRecord(v: unknown): SurfaceRecord | null {
   const surfaceId = str(v.surfaceId);
   const name = str(v.name);
   if (!surfaceId || !name) return null;
-  return { surfaceId, name, tempC: v.tempC, marginC: v.marginC, atRisk: v.atRisk };
+  const record: SurfaceRecord = {
+    surfaceId,
+    name,
+    tempC: v.tempC,
+    marginC: v.marginC,
+    atRisk: v.atRisk,
+    absorbent: v.absorbent === true,
+  };
+  if (v.surfaceRH !== undefined) {
+    if (!num(v.surfaceRH) || v.surfaceRH < 0 || v.surfaceRH > 100) return null;
+    record.surfaceRH = v.surfaceRH;
+  }
+  return record;
 }
 
 /** An entry read from storage or an import file, or null if it is not a valid entry. */

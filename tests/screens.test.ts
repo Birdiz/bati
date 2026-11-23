@@ -415,7 +415,7 @@ describe("cold surface history", () => {
 describe("reference sheet", () => {
   it("fills the rules and the 5–40 °C table", () => {
     app.go("fiche");
-    expect(document.querySelectorAll("#rulesTable tbody tr")).toHaveLength(6);
+    expect(document.querySelectorAll("#rulesTable tbody tr")).toHaveLength(7);
     expect(document.querySelectorAll("#ahTable tbody tr")).toHaveLength(36);
     expect(text("#formulaNote")).toContain("Alduchov");
   });

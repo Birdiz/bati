@@ -27,7 +27,7 @@ const house: HouseProfile = {
   version: 1,
   ventilation: "singleFlow",
   facades: [facade("ne", "Côté ruisseau", "NE", true, true), facade("sw", "Jardin", "SW", false, true)],
-  coldSurfaces: [{ id: "s1", name: "plancher du salon", location: "au-dessus de la cave" }],
+  coldSurfaces: [{ id: "s1", name: "plancher du salon", location: "au-dessus de la cave", absorbent: false }],
 };
 
 const input = (outdoor: CheckInput["outdoor"], storm = false, recentRain = false): CheckInput => ({
@@ -124,10 +124,31 @@ describe("adviceText", () => {
 describe("surfaceText", () => {
   const indoor = { t: 21, rh: 73 };
   it("says yes or no with the margin", () => {
-    expect(surfaceText(checkSurface(14, indoor))).toMatchObject({ title: "Risque de condensation", tone: "stop" });
-    expect(surfaceText(checkSurface(14, indoor)).lines[0]).toMatch(/^La surface est 2,0 °C sous le point de rosée/);
-    expect(surfaceText(checkSurface(16.5, indoor))).toMatchObject({ title: "À la limite" });
-    expect(surfaceText(checkSurface(19, indoor))).toMatchObject({ title: "Pas de condensation", tone: "go" });
+    expect(surfaceText(checkSurface(14, indoor, false))).toMatchObject({
+      title: "Risque de condensation",
+      tone: "stop",
+    });
+    expect(surfaceText(checkSurface(14, indoor, false)).lines[0]).toMatch(
+      /^La surface est 2,0 °C sous le point de rosée/,
+    );
+    expect(surfaceText(checkSurface(16.5, indoor, false))).toMatchObject({ title: "À la limite" });
+    expect(surfaceText(checkSurface(19, indoor, false))).toMatchObject({ title: "Pas de condensation", tone: "go" });
+  });
+
+  it("warns of mould on an absorbent surface above the dew point, and gives its humidity when safe", () => {
+    const room = { t: 19, rh: 60 };
+    const wood = surfaceText(checkSurface(13, room, true));
+    expect(wood).toMatchObject({ title: "Risque de moisissure", tone: "alert" });
+    expect(wood.lines[0]).toBe(
+      "Pas de condensation (1,9 °C au-dessus du point de rosée), mais l'air touche la surface à 88 % d'humidité.",
+    );
+    expect(surfaceText(checkSurface(13, room, false))).toMatchObject({
+      title: "Pas de condensation",
+      lines: [expect.any(String)],
+    });
+    expect(surfaceText(checkSurface(17, room, true)).lines[1]).toBe(
+      "Humidité à la surface : 68 %, sous le seuil des moisissures (80 %).",
+    );
   });
 });
 
@@ -172,7 +193,7 @@ describe("surfaceHistoryText", () => {
   const worst = { day: "2026-11-12", marginC: -0.4, tempC: 11.6, status: "atRisk" as const, checks: 1 };
 
   it("leads with condensation, in red, when one day condensed", () => {
-    const t = surfaceHistoryText({ days: 12, atRisk: 2, nearLimit: 3, worst }, "90", "12 nov.");
+    const t = surfaceHistoryText({ days: 12, atRisk: 2, nearLimit: 3, mould: 0, worst }, "90", "12 nov.");
     expect(t).toMatchObject({ title: "Condensation 2 jours sur 12", tone: "stop" });
     expect(t.lines).toEqual([
       "Sur les 90 derniers jours : 12 jours vérifiés, 2 en condensation, 3 à la limite.",
@@ -182,17 +203,28 @@ describe("surfaceHistoryText", () => {
 
   it("says near the limit in ochre, or no condensation in green", () => {
     const near = { ...worst, marginC: 0.6, status: "nearLimit" as const };
-    expect(surfaceHistoryText({ days: 1, atRisk: 0, nearLimit: 1, worst: near }, "30", "12 nov.")).toMatchObject({
+    expect(
+      surfaceHistoryText({ days: 1, atRisk: 0, nearLimit: 1, mould: 0, worst: near }, "30", "12 nov."),
+    ).toMatchObject({
       title: "À la limite 1 jour sur 1",
       tone: "alert",
     });
     const ok = surfaceHistoryText(
-      { days: 4, atRisk: 0, nearLimit: 0, worst: { ...worst, marginC: 2 } },
+      { days: 4, atRisk: 0, nearLimit: 0, mould: 0, worst: { ...worst, marginC: 2 } },
       "all",
       "1 oct.",
     );
     expect(ok).toMatchObject({ title: "Pas de condensation", tone: "go" });
     expect(ok.lines[0]).toBe("Depuis le premier relevé : 4 jours vérifiés, 0 en condensation, 0 à la limite.");
+  });
+
+  it("names mould days after condensation and the limit, in ochre", () => {
+    const mould = { ...worst, marginC: 2.5, status: "mould" as const };
+    const t = surfaceHistoryText({ days: 6, atRisk: 0, nearLimit: 0, mould: 2, worst: mould }, "30", "12 nov.");
+    expect(t).toMatchObject({ title: "Risque de moisissure 2 jours sur 6", tone: "alert" });
+    expect(t.lines[0]).toBe(
+      "Sur les 30 derniers jours : 6 jours vérifiés, 0 en condensation, 0 à la limite, 2 en risque de moisissure.",
+    );
   });
 });
 

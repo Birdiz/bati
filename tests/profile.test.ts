@@ -19,7 +19,7 @@ describe("sanitizeProfile", () => {
       facades: [
         { id: "f1", name: "Façade ruisseau", orientation: "NE", facesWetArea: true, hasUpstairsOpenings: false },
       ],
-      coldSurfaces: [{ id: "s1", name: "Plancher salon", location: "Au-dessus de la cave" }],
+      coldSurfaces: [{ id: "s1", name: "Plancher salon", location: "Au-dessus de la cave", absorbent: true }],
     };
     expect(sanitizeProfile(p)).toEqual({ profile: p, dropped: 0 });
   });
@@ -43,7 +43,8 @@ describe("sanitizeProfile", () => {
     expect(r?.profile.facades).toEqual([
       { id: "f1", name: "Sud", orientation: "S", facesWetArea: false, hasUpstairsOpenings: false },
     ]);
-    expect(r?.profile.coldSurfaces).toEqual([{ id: "s2", name: "Cave", location: "" }]);
+    // A surface saved before the material was asked is read as non-absorbent: dew point check only, as before.
+    expect(r?.profile.coldSurfaces).toEqual([{ id: "s2", name: "Cave", location: "", absorbent: false }]);
     expect(r?.dropped).toBe(5);
   });
 

@@ -8,8 +8,8 @@ import type { HouseProfile, Orientation, Ventilation } from "../domain/house/pro
 import { type AdviceCode, NEUTRAL_BAND } from "../domain/humidity/advice";
 import { COMPARE_DAYS, type DayPoint, type ExcessTrend, MIN_DAYS, type TrendWindow } from "../domain/humidity/trend";
 import type { ReadingError } from "../domain/humidity/psychrometrics";
-import type { SurfaceCheck } from "../domain/humidity/surface";
-import type { SurfaceDay, SurfaceStatus, SurfaceSummary } from "../domain/humidity/surfaceHistory";
+import { MOULD_RH, type SurfaceCheck, type SurfaceStatus } from "../domain/humidity/surface";
+import type { SurfaceDay, SurfaceSummary } from "../domain/humidity/surfaceHistory";
 
 /** One decimal, French comma, no "-0,0". */
 export function fmt(x: number, digits = 1): string {
@@ -167,13 +167,13 @@ export function adviceText(a: Advice, profile: HouseProfile): AdviceText {
 export function surfaceText(c: SurfaceCheck): AdviceText {
   const td = fmt(c.dewPoint);
   const m = fmt(Math.abs(c.marginC));
-  if (c.atRisk)
+  if (c.status === "atRisk")
     return {
       title: "Risque de condensation",
       tone: "stop",
       lines: [`La surface est ${m} °C sous le point de rosée de la pièce (${td} °C) : l'eau s'y dépose.`],
     };
-  if (c.nearLimit)
+  if (c.status === "nearLimit")
     return {
       title: "À la limite",
       tone: "alert",
@@ -181,11 +181,19 @@ export function surfaceText(c: SurfaceCheck): AdviceText {
         `Seulement ${m} °C au-dessus du point de rosée (${td} °C) : c'est dans la marge d'erreur du thermomètre.`,
       ],
     };
-  return {
-    title: "Pas de condensation",
-    tone: "go",
-    lines: [`${m} °C de marge au-dessus du point de rosée de la pièce (${td} °C).`],
-  };
+  const rh = fmt(c.surfaceRH, 0);
+  if (c.status === "mould")
+    return {
+      title: "Risque de moisissure",
+      tone: "alert",
+      lines: [
+        `Pas de condensation (${m} °C au-dessus du point de rosée), mais l'air touche la surface à ${rh} % d'humidité.`,
+        `Au-delà de ${MOULD_RH} % pendant des jours, les moisissures s'installent sur le bois, le plâtre ou la pierre, sans goutte visible.`,
+      ],
+    };
+  const lines = [`${m} °C de marge au-dessus du point de rosée de la pièce (${td} °C).`];
+  if (c.absorbent) lines.push(`Humidité à la surface : ${rh} %, sous le seuil des moisissures (${MOULD_RH} %).`);
+  return { title: "Pas de condensation", tone: "go", lines };
 }
 
 export const TREND_WINDOW_LABEL: Record<TrendWindow, string> = { "30": "30 jours", "90": "90 jours", all: "Tout" };
@@ -241,20 +249,22 @@ export function windowPhrase(w: TrendWindow): string {
 
 const checkedDays = (n: number) => `${n} jour${n > 1 ? "s" : ""} vérifié${n > 1 ? "s" : ""}`;
 
-const STATUS_WORDS: Record<SurfaceStatus, string> = {
+export const STATUS_WORDS: Record<SurfaceStatus, string> = {
   atRisk: "condensation",
   nearLimit: "à la limite",
+  mould: "risque de moisissure",
   ok: "pas de condensation",
 };
 
 /** Summary of a cold surface over the period shown; the tone follows the worst day. */
 export function surfaceHistoryText(s: SurfaceSummary, w: TrendWindow, worstDate: string): AdviceText {
   const lines = [
-    `${windowPhrase(w)} : ${checkedDays(s.days)}, ${s.atRisk} en condensation, ${s.nearLimit} à la limite.`,
+    `${windowPhrase(w)} : ${checkedDays(s.days)}, ${s.atRisk} en condensation, ${s.nearLimit} à la limite${s.mould > 0 ? `, ${s.mould} en risque de moisissure` : ""}.`,
     `Marge la plus basse : ${fmt(s.worst.marginC)} °C le ${worstDate} (surface à ${fmt(s.worst.tempC)} °C).`,
   ];
   if (s.atRisk > 0) return { title: `Condensation ${days(s.atRisk)} sur ${s.days}`, tone: "stop", lines };
   if (s.nearLimit > 0) return { title: `À la limite ${days(s.nearLimit)} sur ${s.days}`, tone: "alert", lines };
+  if (s.mould > 0) return { title: `Risque de moisissure ${days(s.mould)} sur ${s.days}`, tone: "alert", lines };
   return { title: "Pas de condensation", tone: "go", lines };
 }
 
@@ -304,5 +314,9 @@ export const RULES: { situation: string; advice: string }[] = [
   {
     situation: "Surface plus froide que le point de rosée de la pièce",
     advice: "L'eau s'y dépose : assécher l'air de la pièce (aérer si dehors est plus sec, déshumidificateur sinon).",
+  },
+  {
+    situation: "Bois, plâtre ou pierre à plus de 80 % d'humidité en surface",
+    advice: "Moisissures si ça dure, sans goutte visible : même remède, assécher l'air de la pièce.",
   },
 ];

@@ -387,8 +387,8 @@
             <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wall" /></svg>Surfaces froides
           </h3>
           <p class="hint">
-            Là où la condensation peut se former : plancher au-dessus de la cave, mur sur la grange, mur nord, angle de
-            pièce…
+            Là où la condensation ou les moisissures peuvent se former : plancher au-dessus de la cave, mur sur la
+            grange, mur nord, angle de pièce…
           </p>
           <ul id="surfaceList" class="items"></ul>
           <form id="coldSurfaceForm" class="add">
@@ -399,6 +399,14 @@
               >Emplacement
               <input id="coldSurfaceLocation" type="text" maxlength="200" placeholder="Au-dessus de la cave"
             /></label>
+            <label class="check"
+              ><input id="coldSurfaceAbsorbent" type="checkbox" /> Matière absorbante : bois, plâtre, enduit, pierre,
+              terre cuite brute</label
+            >
+            <p class="hint">
+              Elle boit l'eau sans goutte visible : les moisissures peuvent s'y installer avant la condensation. Pas le
+              carrelage émaillé, le verre ni la peinture brillante.
+            </p>
             <button type="submit" class="btn">Ajouter la surface</button>
           </form>
         </div>
