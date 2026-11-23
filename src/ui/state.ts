@@ -10,7 +10,7 @@ import { sortLog } from "../domain/humidity/log";
 import { type AirReading, type ReadingError, readingError } from "../domain/humidity/psychrometrics";
 import { DEFAULT_TREND_WINDOW, TREND_WINDOWS, type TrendWindow } from "../domain/humidity/trend";
 import { KEYS, type KeyValue, loadData, readJSON, saveLog, saveProfile, writeJSON } from "../storage/device";
-import { parseDecimal } from "../text/fr";
+import { isUnfinishedNumber, parseDecimal } from "../text/fr";
 
 /** Raw form values, kept as typed so that "12," stays on screen while the user types. */
 export interface Draft {
@@ -53,19 +53,34 @@ export interface FieldErrors {
   outdoorRh?: ReadingError;
 }
 
-/** A reading from two typed fields, or the error of each field (null when the field is empty: nothing to say yet). */
+/** Nothing to judge yet: the field is empty or its number is still being typed ("-"). */
+export const pendingField = (raw: string): boolean => raw.trim() === "" || isUnfinishedNumber(raw);
+
+/** A reading from two typed fields, or the error of each field (null while a field is pending: nothing to say yet). */
 export function parseReading(
   tRaw: string,
   rhRaw: string,
 ): { reading: AirReading | null; t: ReadingError | null; rh: ReadingError | null; empty: boolean } {
-  const empty = tRaw.trim() === "" || rhRaw.trim() === "";
+  const empty = pendingField(tRaw) || pendingField(rhRaw);
   const t = parseDecimal(tRaw);
   const rh = parseDecimal(rhRaw);
-  const tErr = tRaw.trim() === "" ? null : Number.isNaN(t) ? "notANumber" : readingError({ t, rh: 50 });
-  const rhErr = rhRaw.trim() === "" ? null : Number.isNaN(rh) ? "notANumber" : readingError({ t: 20, rh });
+  const tErr = pendingField(tRaw) ? null : Number.isNaN(t) ? "notANumber" : readingError({ t, rh: 50 });
+  const rhErr = pendingField(rhRaw) ? null : Number.isNaN(rh) ? "notANumber" : readingError({ t: 20, rh });
   const reading = !empty && !tErr && !rhErr ? { t, rh } : null;
   return { reading, t: tErr, rh: rhErr, empty };
 }
+
+/**
+ * Flips the sign of a typed number: phone decimal keypads have no minus key. Uses the true minus sign; an empty
+ * field gets the sign alone, ready for the digits.
+ */
+export function toggleSign(raw: string): string {
+  const t = raw.trim();
+  return /^[-\u2212\u2013]/.test(t) ? t.slice(1).trimStart() : `\u2212${t.replace(/^\+\s*/, "")}`;
+}
+
+/** True when a typed number starts with a minus sign. */
+export const isNegative = (raw: string): boolean => /^[-\u2212\u2013]/.test(raw.trim());
 
 export function draftInput(d: Draft): { input: CheckInput | null; errors: FieldErrors; indoor: AirReading | null } {
   const i = parseReading(d.indoorT, d.indoorRh);

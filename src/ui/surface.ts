@@ -4,7 +4,7 @@ import { createEntry } from "../domain/humidity/log";
 import { checkSurface } from "../domain/humidity/surface";
 import { READING_ERROR, parseDecimal, surfaceText } from "../text/fr";
 import { byId, flash, h, showAdvice } from "./dom";
-import { type AppState, draftInput, parseReading } from "./state";
+import { type AppState, draftInput, parseReading, pendingField } from "./state";
 
 /** Value of the "other surface" option: a check on a surface that is not in the profile. */
 export const OTHER_SURFACE = "autre";
@@ -38,7 +38,7 @@ export function mountSurface(state: AppState): { show(): void } {
 
   function render(): void {
     const raw = state.draft.surfaceT;
-    const err = raw.trim() !== "" && Number.isNaN(parseDecimal(raw));
+    const err = !pendingField(raw) && Number.isNaN(parseDecimal(raw));
     const p = byId("surfaceT-error");
     p.hidden = !err;
     p.textContent = err ? READING_ERROR.notANumber : "";

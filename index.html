@@ -18,27 +18,47 @@
   </head>
   <body>
     <header class="top">
-      <h1 class="brand">
-        <svg class="brand-mark" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-          <polygon points="10,2 18,8 18,18 2,18 2,8" fill="none" stroke="currentColor" stroke-width="2" />
-          <rect x="7.5" y="11" width="5" height="7" fill="currentColor" />
-        </svg>
-        Maison Bloc
-      </h1>
-      <p id="storeStatus" class="store-status" hidden></p>
+      <div class="top-inner">
+        <h1 class="brand">
+          <svg class="brand-mark" width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <polygon points="10,2 18,8 18,18 2,18 2,8" fill="none" stroke="currentColor" stroke-width="2" />
+            <rect x="7.5" y="11" width="5" height="7" fill="currentColor" />
+          </svg>
+          Maison Bloc
+        </h1>
+        <nav class="tabs" aria-label="Écrans">
+          <a href="#releve" data-tab="releve">Relevé</a>
+          <a href="#surface" data-tab="surface">Surface</a>
+          <a href="#maison" data-tab="maison">Maison</a>
+          <a href="#carnet" data-tab="carnet">Carnet</a>
+          <a href="#fiche" data-tab="fiche">Fiche</a>
+        </nav>
+        <p id="storeStatus" class="store-status" hidden></p>
+      </div>
     </header>
 
     <main>
       <!-- 1. Quick check -->
-      <section id="screen-releve" data-screen="releve" aria-labelledby="releveTitle">
+      <section id="screen-releve" class="screen split" data-screen="releve" aria-labelledby="releveTitle">
         <h2 id="releveTitle">Relevé</h2>
         <form id="checkForm" class="readings" novalidate autocomplete="off">
           <fieldset class="reading" data-side="indoor">
             <legend>Intérieur</legend>
-            <label
-              >Température <span class="unit">°C</span>
-              <input id="indoorT" name="indoorT" type="text" inputmode="decimal" enterkeyhint="next" />
-            </label>
+            <div class="signed">
+              <label
+                >Température <span class="unit">°C</span>
+                <input id="indoorT" name="indoorT" type="text" inputmode="decimal" enterkeyhint="next" />
+              </label>
+              <button
+                type="button"
+                class="sign-toggle"
+                data-sign-for="indoorT"
+                aria-label="Température intérieure négative"
+                aria-pressed="false"
+              >
+                ±
+              </button>
+            </div>
             <p class="field-error" id="indoorT-error" hidden></p>
             <label
               >Humidité relative <span class="unit">%</span>
@@ -53,10 +73,21 @@
           </fieldset>
           <fieldset class="reading" data-side="outdoor">
             <legend>Extérieur</legend>
-            <label
-              >Température <span class="unit">°C</span>
-              <input id="outdoorT" name="outdoorT" type="text" inputmode="decimal" enterkeyhint="next" />
-            </label>
+            <div class="signed">
+              <label
+                >Température <span class="unit">°C</span>
+                <input id="outdoorT" name="outdoorT" type="text" inputmode="decimal" enterkeyhint="next" />
+              </label>
+              <button
+                type="button"
+                class="sign-toggle"
+                data-sign-for="outdoorT"
+                aria-label="Température extérieure négative"
+                aria-pressed="false"
+              >
+                ±
+              </button>
+            </div>
             <p class="field-error" id="outdoorT-error" hidden></p>
             <label
               >Humidité relative <span class="unit">%</span>
@@ -97,25 +128,27 @@
           </fieldset>
         </form>
 
-        <div id="advice" class="advice" data-tone="empty" aria-live="polite">
-          <p id="adviceVerdict" class="advice-verdict" hidden></p>
-          <p id="adviceTitle" class="advice-title">Saisir les relevés intérieur et extérieur.</p>
-          <ul id="adviceLines" class="advice-lines"></ul>
-          <p id="dewPointLine" class="dew-point" hidden></p>
-        </div>
+        <div class="aside">
+          <div id="advice" class="advice" data-tone="empty" aria-live="polite">
+            <p id="adviceVerdict" class="advice-verdict" hidden></p>
+            <p id="adviceTitle" class="advice-title">Saisir les relevés intérieur et extérieur.</p>
+            <ul id="adviceLines" class="advice-lines"></ul>
+            <p id="dewPointLine" class="dew-point" hidden></p>
+          </div>
 
-        <form id="saveForm" class="save" hidden>
-          <label
-            >Note <span class="hint">(facultatif)</span>
-            <textarea id="note" rows="2" maxlength="1000"></textarea>
-          </label>
-          <button type="submit" class="btn primary">Enregistrer dans le carnet</button>
-          <p id="saveStatus" class="flash" role="status" hidden></p>
-        </form>
+          <form id="saveForm" class="save" hidden>
+            <label
+              >Note <span class="hint">(facultatif)</span>
+              <textarea id="note" rows="2" maxlength="1000"></textarea>
+            </label>
+            <button type="submit" class="btn primary">Enregistrer dans le carnet</button>
+            <p id="saveStatus" class="flash" role="status" hidden></p>
+          </form>
+        </div>
       </section>
 
       <!-- 3. Cold surface check -->
-      <section id="screen-surface" data-screen="surface" aria-labelledby="surfaceTitle" hidden>
+      <section id="screen-surface" class="screen split" data-screen="surface" aria-labelledby="surfaceTitle" hidden>
         <h2 id="surfaceTitle">Surface froide</h2>
         <form id="surfaceForm" novalidate autocomplete="off">
           <label
@@ -126,17 +159,39 @@
             Aucune surface froide enregistrée. <a href="#maison">Les ajouter dans Ma maison</a>, ou vérifier une autre
             surface.
           </p>
-          <label
-            >Température de la surface <span class="unit">°C</span>
-            <input id="surfaceT" type="text" inputmode="decimal" />
-          </label>
+          <div class="signed">
+            <label
+              >Température de la surface <span class="unit">°C</span>
+              <input id="surfaceT" type="text" inputmode="decimal" />
+            </label>
+            <button
+              type="button"
+              class="sign-toggle"
+              data-sign-for="surfaceT"
+              aria-label="Température de la surface négative"
+              aria-pressed="false"
+            >
+              ±
+            </button>
+          </div>
           <p class="field-error" id="surfaceT-error" hidden></p>
           <fieldset class="reading">
             <legend>Air de la pièce</legend>
-            <label
-              >Température <span class="unit">°C</span>
-              <input id="surfIndoorT" type="text" inputmode="decimal" />
-            </label>
+            <div class="signed">
+              <label
+                >Température <span class="unit">°C</span>
+                <input id="surfIndoorT" type="text" inputmode="decimal" />
+              </label>
+              <button
+                type="button"
+                class="sign-toggle"
+                data-sign-for="surfIndoorT"
+                aria-label="Température de la pièce négative"
+                aria-pressed="false"
+              >
+                ±
+              </button>
+            </div>
             <label
               >Humidité relative <span class="unit">%</span>
               <input id="surfIndoorRh" type="text" inputmode="decimal" />
@@ -144,17 +199,21 @@
             <p class="hint">Les mêmes valeurs que l'intérieur du relevé.</p>
           </fieldset>
         </form>
-        <div id="surfaceResult" class="advice" data-tone="empty" aria-live="polite">
-          <p id="surfaceResultTitle" class="advice-title">Saisir la température de la surface et l'air de la pièce.</p>
-          <ul id="surfaceResultLines" class="advice-lines"></ul>
+        <div class="aside">
+          <div id="surfaceResult" class="advice" data-tone="empty" aria-live="polite">
+            <p id="surfaceResultTitle" class="advice-title">
+              Saisir la température de la surface et l'air de la pièce.
+            </p>
+            <ul id="surfaceResultLines" class="advice-lines"></ul>
+          </div>
+          <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
+          <p id="surfaceSaveNote" class="hint" hidden>Pour enregistrer, compléter aussi l'extérieur dans le relevé.</p>
+          <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
         </div>
-        <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
-        <p id="surfaceSaveNote" class="hint" hidden>Pour enregistrer, compléter aussi l'extérieur dans le relevé.</p>
-        <p id="surfaceSaveStatus" class="flash" role="status" hidden></p>
       </section>
 
       <!-- 2. House profile -->
-      <section id="screen-maison" data-screen="maison" aria-labelledby="maisonTitle" hidden>
+      <section id="screen-maison" class="screen columns" data-screen="maison" aria-labelledby="maisonTitle" hidden>
         <h2 id="maisonTitle">Ma maison</h2>
         <p class="hint">À remplir une fois : les conseils s'en servent pour dire où ouvrir.</p>
 
@@ -167,143 +226,152 @@
           </select>
         </label>
 
-        <h3>Façades</h3>
-        <ul id="facadeList" class="items"></ul>
-        <form id="facadeForm" class="add">
-          <label>Nom <input id="facadeName" type="text" maxlength="200" placeholder="Côté jardin" required /></label>
-          <label
-            >Orientation
-            <select id="facadeOrientation">
-              <option value="N">Nord</option>
-              <option value="NE">Nord-est</option>
-              <option value="E">Est</option>
-              <option value="SE">Sud-est</option>
-              <option value="S">Sud</option>
-              <option value="SW">Sud-ouest</option>
-              <option value="W">Ouest</option>
-              <option value="NW">Nord-ouest</option>
-            </select>
-          </label>
-          <label class="check"><input id="facadeWet" type="checkbox" /> Donne sur un ruisseau ou une zone humide</label>
-          <label class="check"><input id="facadeUp" type="checkbox" /> Fenêtres qui s'ouvrent à l'étage</label>
-          <button type="submit" class="btn">Ajouter la façade</button>
-        </form>
+        <div class="col">
+          <h3>Façades</h3>
+          <ul id="facadeList" class="items"></ul>
+          <form id="facadeForm" class="add">
+            <label>Nom <input id="facadeName" type="text" maxlength="200" placeholder="Côté jardin" required /></label>
+            <label
+              >Orientation
+              <select id="facadeOrientation">
+                <option value="N">Nord</option>
+                <option value="NE">Nord-est</option>
+                <option value="E">Est</option>
+                <option value="SE">Sud-est</option>
+                <option value="S">Sud</option>
+                <option value="SW">Sud-ouest</option>
+                <option value="W">Ouest</option>
+                <option value="NW">Nord-ouest</option>
+              </select>
+            </label>
+            <label class="check"
+              ><input id="facadeWet" type="checkbox" /> Donne sur un ruisseau ou une zone humide</label
+            >
+            <label class="check"><input id="facadeUp" type="checkbox" /> Fenêtres qui s'ouvrent à l'étage</label>
+            <button type="submit" class="btn">Ajouter la façade</button>
+          </form>
+        </div>
 
-        <h3>Surfaces froides</h3>
-        <p class="hint">
-          Là où la condensation peut se former : plancher au-dessus de la cave, mur nord, angle de pièce…
-        </p>
-        <ul id="surfaceList" class="items"></ul>
-        <form id="coldSurfaceForm" class="add">
-          <label
-            >Nom <input id="coldSurfaceName" type="text" maxlength="200" placeholder="Plancher du salon" required
-          /></label>
-          <label
-            >Emplacement <input id="coldSurfaceLocation" type="text" maxlength="200" placeholder="Au-dessus de la cave"
-          /></label>
-          <button type="submit" class="btn">Ajouter la surface</button>
-        </form>
+        <div class="col">
+          <h3>Surfaces froides</h3>
+          <p class="hint">
+            Là où la condensation peut se former : plancher au-dessus de la cave, mur nord, angle de pièce…
+          </p>
+          <ul id="surfaceList" class="items"></ul>
+          <form id="coldSurfaceForm" class="add">
+            <label
+              >Nom <input id="coldSurfaceName" type="text" maxlength="200" placeholder="Plancher du salon" required
+            /></label>
+            <label
+              >Emplacement
+              <input id="coldSurfaceLocation" type="text" maxlength="200" placeholder="Au-dessus de la cave"
+            /></label>
+            <button type="submit" class="btn">Ajouter la surface</button>
+          </form>
+        </div>
       </section>
 
       <!-- 4. Measurement log -->
-      <section id="screen-carnet" data-screen="carnet" aria-labelledby="carnetTitle" hidden>
+      <section id="screen-carnet" class="screen columns" data-screen="carnet" aria-labelledby="carnetTitle" hidden>
         <h2 id="carnetTitle">Carnet</h2>
         <p id="logEmpty" class="hint">Aucun relevé enregistré. Les relevés restent sur cet appareil.</p>
 
-        <section id="trend" aria-labelledby="trendTitle" hidden>
-          <h3 id="trendTitle">Tendance</h3>
-          <div id="trendWindows" class="segmented" role="group" aria-label="Période"></div>
-          <div id="trendResult" class="advice compact" data-tone="empty" aria-live="polite">
-            <p id="trendResultTitle" class="advice-title"></p>
-            <ul id="trendResultLines" class="advice-lines"></ul>
-          </div>
-          <figure id="trendFigure" class="trend-chart">
-            <div id="trendChart"></div>
-            <figcaption>
-              <ul class="trend-legend">
-                <li data-series="excess">Excès (intérieur − extérieur)</li>
-                <li data-series="indoor">Intérieur</li>
-                <li data-series="outdoor">Extérieur</li>
-              </ul>
-            </figcaption>
-          </figure>
-          <p id="trendFew" class="hint" hidden>La courbe apparaît à partir de deux jours de relevés sur la période.</p>
+        <div class="col">
+          <section id="trend" aria-labelledby="trendTitle" hidden>
+            <h3 id="trendTitle">Tendance</h3>
+            <div id="trendWindows" class="segmented" role="group" aria-label="Période"></div>
+            <div id="trendResult" class="advice compact" data-tone="empty" aria-live="polite">
+              <p id="trendResultTitle" class="advice-title"></p>
+              <ul id="trendResultLines" class="advice-lines"></ul>
+            </div>
+            <figure id="trendFigure" class="trend-chart">
+              <div id="trendChart"></div>
+              <figcaption>
+                <ul class="trend-legend">
+                  <li data-series="excess">Excès (intérieur − extérieur)</li>
+                  <li data-series="indoor">Intérieur</li>
+                  <li data-series="outdoor">Extérieur</li>
+                </ul>
+              </figcaption>
+            </figure>
+            <p id="trendFew" class="hint" hidden>
+              La courbe apparaît à partir de deux jours de relevés sur la période.
+            </p>
+            <p class="hint">
+              L'excès d'humidité, c'est l'humidité absolue intérieure moins l'extérieure : l'eau que la maison ajoute à
+              l'air (murs, sol, occupants), sans l'effet de la saison. Pour comparer, prenez vos relevés dans les mêmes
+              conditions, pas juste après une douche ou une cuisson. Un point par jour : la moyenne de ses relevés.
+            </p>
+          </section>
+
+          <h3>Sauvegarde</h3>
           <p class="hint">
-            L'excès d'humidité, c'est l'humidité absolue intérieure moins l'extérieure : l'eau que la maison ajoute à
-            l'air (murs, sol, occupants), sans l'effet de la saison. Pour comparer, prenez vos relevés dans les mêmes
-            conditions, pas juste après une douche ou une cuisson. Un point par jour : la moyenne de ses relevés.
+            Tout reste sur cet appareil. Sur iPhone, le navigateur peut effacer les données d'une application peu
+            utilisée : gardez une copie de temps en temps.
           </p>
-        </section>
-
-        <h3 id="logTitle" hidden>Relevés</h3>
-        <ol id="logList" class="log"></ol>
-
-        <h3>Sauvegarde</h3>
-        <p class="hint">
-          Tout reste sur cet appareil. Sur iPhone, le navigateur peut effacer les données d'une application peu utilisée
-          : gardez une copie de temps en temps.
-        </p>
-        <p id="backupStatus" class="backup-status"></p>
-        <div class="row">
-          <button id="exportBtn" type="button" class="btn primary">Enregistrer une copie</button>
-          <label class="btn file"
-            >Reprendre une copie<input id="importFile" type="file" accept="application/json,.json"
-          /></label>
-        </div>
-        <div id="importChoice" class="import-choice" hidden>
-          <p id="importSummary"></p>
+          <p id="backupStatus" class="backup-status"></p>
           <div class="row">
-            <button id="importMerge" type="button" class="btn primary">Ajouter au carnet</button>
-            <button id="importReplace" type="button" class="btn danger">Tout remplacer</button>
-            <button id="importCancel" type="button" class="btn">Annuler</button>
+            <button id="exportBtn" type="button" class="btn primary">Enregistrer une copie</button>
+            <label class="btn file"
+              >Reprendre une copie<input id="importFile" type="file" accept="application/json,.json"
+            /></label>
+          </div>
+          <div id="importChoice" class="import-choice" hidden>
+            <p id="importSummary"></p>
+            <div class="row">
+              <button id="importMerge" type="button" class="btn primary">Ajouter au carnet</button>
+              <button id="importReplace" type="button" class="btn danger">Tout remplacer</button>
+              <button id="importCancel" type="button" class="btn">Annuler</button>
+            </div>
+          </div>
+          <p id="importStatus" class="flash" role="status" hidden></p>
+
+          <div id="install" class="install" hidden>
+            <h3>Installer sur l'écran d'accueil</h3>
+            <p id="installIos" class="hint" hidden>Sur iPhone : bouton Partager, puis « Sur l'écran d'accueil ».</p>
+            <button id="installBtn" type="button" class="btn" hidden>Installer</button>
           </div>
         </div>
-        <p id="importStatus" class="flash" role="status" hidden></p>
 
-        <div id="install" class="install" hidden>
-          <h3>Installer sur l'écran d'accueil</h3>
-          <p id="installIos" class="hint" hidden>Sur iPhone : bouton Partager, puis « Sur l'écran d'accueil ».</p>
-          <button id="installBtn" type="button" class="btn" hidden>Installer</button>
+        <div class="col col-log">
+          <h3 id="logTitle" hidden>Relevés</h3>
+          <ol id="logList" class="log"></ol>
         </div>
       </section>
 
       <!-- 5. Printable reference sheet -->
-      <section id="screen-fiche" data-screen="fiche" aria-labelledby="ficheTitle" hidden>
+      <section id="screen-fiche" class="screen" data-screen="fiche" aria-labelledby="ficheTitle" hidden>
         <div class="row no-print">
           <h2 id="ficheTitle">Fiche à imprimer</h2>
           <button id="printBtn" type="button" class="btn">Imprimer</button>
         </div>
         <div class="sheet">
           <h2 class="print-only">Aérer au bon moment — fiche repère</h2>
-          <h3>Les règles</h3>
-          <table id="rulesTable" class="rules">
-            <thead>
-              <tr>
-                <th scope="col">Situation</th>
-                <th scope="col">Que faire</th>
-              </tr>
-            </thead>
-            <tbody></tbody>
-          </table>
-          <p class="hint">
-            Décider sur l'humidité absolue (g/m³) dedans et dehors, jamais sur l'humidité relative seule.
-          </p>
-          <h3>Humidité absolue (g/m³) selon la température et l'humidité relative</h3>
-          <table id="ahTable" class="ah-table">
-            <thead></thead>
-            <tbody></tbody>
-          </table>
-          <p id="formulaNote" class="hint"></p>
+          <div class="col">
+            <h3>Les règles</h3>
+            <table id="rulesTable" class="rules">
+              <thead>
+                <tr>
+                  <th scope="col">Situation</th>
+                  <th scope="col">Que faire</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+            <p class="hint">
+              Décider sur l'humidité absolue (g/m³) dedans et dehors, jamais sur l'humidité relative seule.
+            </p>
+          </div>
+          <div class="col">
+            <h3>Humidité absolue (g/m³) selon la température et l'humidité relative</h3>
+            <table id="ahTable" class="ah-table">
+              <thead></thead>
+              <tbody></tbody>
+            </table>
+            <p id="formulaNote" class="hint"></p>
+          </div>
         </div>
       </section>
     </main>
-
-    <nav class="tabs" aria-label="Écrans">
-      <a href="#releve" data-tab="releve">Relevé</a>
-      <a href="#surface" data-tab="surface">Surface</a>
-      <a href="#maison" data-tab="maison">Maison</a>
-      <a href="#carnet" data-tab="carnet">Carnet</a>
-      <a href="#fiche" data-tab="fiche">Fiche</a>
-    </nav>
   </body>
 </html>

@@ -2,7 +2,16 @@ import { describe, expect, it } from "vitest";
 import type { Facade, HouseProfile } from "../src/domain/house/profile";
 import { type CheckInput, decideAdvice } from "../src/domain/humidity/advice";
 import { checkSurface } from "../src/domain/humidity/surface";
-import { adviceText, fmt, list, parseDecimal, signed, surfaceText, trendText } from "../src/text/fr";
+import {
+  adviceText,
+  fmt,
+  isUnfinishedNumber,
+  list,
+  parseDecimal,
+  signed,
+  surfaceText,
+  trendText,
+} from "../src/text/fr";
 
 const facade = (id: string, name: string, orientation: Facade["orientation"], wet = false, up = false): Facade => ({
   id,
@@ -37,8 +46,21 @@ describe("fmt / parseDecimal", () => {
     expect(parseDecimal("12,5")).toBe(12.5);
     expect(parseDecimal(" 21.3 ")).toBe(21.3);
     expect(parseDecimal("-4")).toBe(-4);
+    expect(parseDecimal("\u22123,5")).toBe(-3.5);
+    expect(parseDecimal("\u2013 2")).toBe(-2);
+    expect(parseDecimal("+7")).toBe(7);
+    expect(parseDecimal("-")).toBeNaN();
+    expect(parseDecimal("--4")).toBeNaN();
     expect(parseDecimal("12abc")).toBeNaN();
     expect(parseDecimal("")).toBeNaN();
+  });
+
+  it("tells a number still being typed from a wrong one", () => {
+    expect(isUnfinishedNumber("-")).toBe(true);
+    expect(isUnfinishedNumber(" \u2212, ")).toBe(true);
+    expect(isUnfinishedNumber("")).toBe(false);
+    expect(isUnfinishedNumber("-4")).toBe(false);
+    expect(isUnfinishedNumber("abc")).toBe(false);
   });
 
   it("joins lists the French way", () => {

@@ -4,6 +4,7 @@ import { byId } from "./dom";
 import { mountHouse } from "./house";
 import { mountLog } from "./log";
 import { mountSheet } from "./sheet";
+import { mountSignToggles, syncSignToggles } from "./sign";
 import type { AppState } from "./state";
 import { mountSurface } from "./surface";
 
@@ -23,6 +24,7 @@ export function startApp(state: AppState): { go(s: Screen): void } {
     carnet: mountLog(state),
     fiche: mountSheet(),
   };
+  mountSignToggles();
 
   function storeStatus(): void {
     const p = byId("storeStatus");
@@ -39,6 +41,7 @@ export function startApp(state: AppState): { go(s: Screen): void } {
       a.toggleAttribute("aria-current", a.dataset.tab === s);
     document.body.dataset.screen = s;
     screens[s].show();
+    syncSignToggles();
   }
 
   window.addEventListener("hashchange", () => go(screenFromHash(location.hash)));

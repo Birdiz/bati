@@ -47,7 +47,21 @@ export function downloadText(text: string, filename: string, type = "application
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** Fills a list with an advice text: title, tone, lines. */
+const calm = () => typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+/** A short entrance for a block whose meaning just changed (a new verdict). Skipped when motion is reduced. */
+export function enter(el: HTMLElement): void {
+  if (calm() || typeof el.animate !== "function") return;
+  el.animate(
+    [
+      { opacity: 0, transform: "translateY(6px)" },
+      { opacity: 1, transform: "none" },
+    ],
+    { duration: 280, easing: "cubic-bezier(0.2, 0.7, 0.2, 1)" },
+  );
+}
+
+/** Fills a list with an advice text: title, tone, lines. The title moves in when the advice itself changes. */
 export function showAdvice(
   box: HTMLElement,
   title: HTMLElement,
@@ -60,7 +74,9 @@ export function showAdvice(
     lines.replaceChildren();
     return;
   }
+  const changed = title.textContent !== t.title;
   box.dataset.tone = t.tone;
   title.textContent = t.title;
+  if (changed) enter(title);
   lines.replaceChildren(...t.lines.map((l) => h("li", {}, l)));
 }
