@@ -6,6 +6,9 @@ import { type AirReading, dewPoint } from "./psychrometrics";
  */
 export const NEAR_LIMIT_C = 1;
 
+/** Surface id of a check on a surface that is not in the profile ("Autre surface"): several surfaces share it. */
+export const OTHER_SURFACE_ID = "autre";
+
 export interface SurfaceCheck {
   dewPoint: number;
   /** Surface temperature − indoor dew point, °C. Zero or negative: condensation. */

@@ -127,6 +127,10 @@ try {
   await page.fill("#surfaceT", "14");
   check("cold surface at risk", (await text(page, "#surfaceResultTitle")) === "Risque de condensation");
   await page.click("#surfaceSave");
+  check(
+    "last saved check reminded",
+    (await text(page, "#surfaceLast")).startsWith("Dernière vérification enregistrée : aujourd'hui, condensation"),
+  );
   await page.screenshot({ path: `${OUT}/3-surface.png`, fullPage: true });
 
   // 6. Log, export.
@@ -137,6 +141,11 @@ try {
     (await page.locator("#trend").isVisible()) &&
       (await page.locator("#trendFew").isVisible()) &&
       (await text(page, "#trendResultTitle")) === "Pas encore de comparaison",
+  );
+  check(
+    "cold surface history: one block, one day in condensation",
+    (await page.locator("#surfaceHistories article").count()) === 1 &&
+      (await text(page, "#surfaceHistories .advice-title")) === "Condensation 1 jour sur 1",
   );
   const [download] = await Promise.all([page.waitForEvent("download"), page.click("#exportBtn")]);
   const exportPath = `${OUT}/${download.suggestedFilename()}`;

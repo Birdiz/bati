@@ -29,7 +29,14 @@ Alegreya 500, 500 italic, 600 (titles, legends, verdict title, dew point line) a
 - Section `#trend` above the entries (hidden while the log is empty), `h3` "Tendance", then "Relevés" before the list.
 - Period: a `.segmented` group of `.btn.small` with `aria-pressed`, the pressed one in accent.
 - Comparison in a compact advice box (`.advice.compact`, title 22 px), same tones as the advice.
-- Chart: hand-made SVG (`src/ui/trend.ts`) whose viewBox is the real width in pixels (labels stay 12 px), 210 px high, on a surface panel. Series coloured by `--series` set per `data-series`: excess `--text` thick with 3 px dots, indoor `--accent`, outdoor `--muted` dashed. Grid in `--rule`, zero line in `--field-rule`. `role="img"` with a French `aria-label` summary. HTML legend under it.
+- Chart: hand-made SVG (`dayChart` in `src/ui/chart.ts`, shared by every chart of the Carnet) whose viewBox is the real width in pixels (labels stay 12 px), 210 px high, on a surface panel. Series coloured by `--series` set per `data-series`: excess `--text` thick with 3 px dots, indoor `--accent`, outdoor `--muted` dashed. Grid in `--rule`, zero line in `--field-rule`. `role="img"` with a French `aria-label` summary. HTML legend under it.
+
+## Carnet: cold surfaces
+
+- Section `#surfaces` between the trend and the entries, one `article.surface-history` per surface: serif `h4` (plus "(retirée de Ma maison)" in muted text), compact advice box in the tone of the worst day, then a 160 px margin chart when there are at least two days.
+- Risk zones as bands behind the grid: below 0 °C in `--stop-bg`, 0 to 1 °C in `--alert-bg`; the range always shows −1 to 3 °C. Line in `--text`, dots coloured by `data-status`: condensation `--stop`, near the limit `--alert`.
+- Every chart of the Carnet shares the same horizontal axis (same period, `carnetAxis`) and the same width (content width of the Carnet screen minus the figure's inset), redrawn on resize.
+- Surface froide screen: the reminder `#surfaceLast` is a muted hint under the surface picker.
 
 ## Constraints
 

@@ -672,6 +672,33 @@ input[role="switch"]:focus-visible {
   border-top-style: dashed;
 }
 
+/* Cold surfaces (Carnet): one block per surface, margin chart with the risk zones of the surface check. */
+.surface-history h4 {
+  margin: 18px 2px 0;
+  font: 600 20px/1.2 var(--serif);
+}
+.surface-history h4 .hint-inline {
+  font: 400 15px var(--font);
+}
+.surface-history .hint {
+  margin: 4px 2px 0;
+}
+.trend-chart .bands rect[data-tone="stop"] {
+  fill: var(--stop-bg);
+}
+.trend-chart .bands rect[data-tone="alert"] {
+  fill: var(--alert-bg);
+}
+[data-series="margin"] {
+  --series: var(--text);
+}
+.trend-chart .series circle[data-status="atRisk"] {
+  fill: var(--stop);
+}
+.trend-chart .series circle[data-status="nearLimit"] {
+  fill: var(--alert);
+}
+
 /* Save */
 .save {
   display: flex;
