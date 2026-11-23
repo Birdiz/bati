@@ -1,5 +1,5 @@
 /** Screen 1: quick check. Indoor and outdoor readings → AH, indoor dew point, one advice. Can be saved to the log. */
-import { type Advice, decideAdvice, drierSide } from "../domain/humidity/advice";
+import { type Advice, type AdviceCode, decideAdvice, drierSide } from "../domain/humidity/advice";
 import { createEntry } from "../domain/humidity/log";
 import { absoluteHumidity } from "../domain/humidity/psychrometrics";
 import { CODE_LABEL, READING_ERROR, SIDE_TAG, type Tone, adviceText, fmt, gapValue } from "../text/fr";
@@ -7,6 +7,14 @@ import { byId, flash, h, showAdvice } from "./dom";
 import { type AppState, type Draft, type FieldErrors, draftInput, parseReading } from "./state";
 
 const FIELDS = ["indoorT", "indoorRh", "outdoorT", "outdoorRh"] as const;
+
+/** Icon of the verdict badge, a symbol of the sprite in index.html. */
+const VERDICT_ICON: Record<AdviceCode, string> = {
+  drierOutside: "#i-wind",
+  wetterOutside: "#i-window",
+  storm: "#i-storm",
+  balanced: "#i-balance",
+};
 
 /**
  * Bounds of the absolute humidity scale: 0–20 g/m³ covers the Vosges most of the year; a humid summer day goes
@@ -120,7 +128,8 @@ export function mountCheck(state: AppState): { show(): void } {
     showScale(advice, text.tone);
     showAdvice(byId("advice"), byId("adviceTitle"), byId("adviceLines"), text);
     verdict.hidden = false;
-    verdict.textContent = CODE_LABEL[advice.code];
+    byId("adviceVerdictText").textContent = CODE_LABEL[advice.code];
+    document.getElementById("adviceVerdictIcon")?.setAttribute("href", VERDICT_ICON[advice.code]);
     dew.hidden = false;
     dew.textContent = `Point de rosée intérieur : ${fmt(advice.indoorDewPoint)} °C. Une surface plus froide se couvre d'eau.`;
   }
