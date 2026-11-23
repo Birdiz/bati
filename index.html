@@ -17,6 +17,79 @@
     <script type="module" src="/src/main.ts"></script>
   </head>
   <body>
+    <svg class="sprite" aria-hidden="true" focusable="false">
+      <!-- Icons: 24 px grid, 1.75 stroke in currentColor, set on .icon. Used with <use href="#i-…">. -->
+      <symbol id="i-gauge" viewBox="0 0 24 24">
+        <circle cx="12" cy="13" r="8.5" />
+        <path d="M12 6v1.5M5 13h1.5M17.5 13H19M7 8l1 1M17 8l-1 1M12 13l3.2-3.6" />
+        <circle cx="12" cy="13" r="1.4" fill="currentColor" stroke="none" />
+      </symbol>
+      <symbol id="i-wall" viewBox="0 0 24 24">
+        <path d="M3.5 3.5h10v17h-10ZM3.5 9h10M3.5 14.5h10M8.5 3.5V9M6 9v5.5M11 9v5.5M8.5 14.5v6" />
+        <path d="M18.5 10c1.5 1.8 2.8 3.4 2.8 4.9a2.8 2.8 0 0 1-5.6 0c0-1.5 1.3-3.1 2.8-4.9Z" />
+      </symbol>
+      <symbol id="i-house" viewBox="0 0 24 24">
+        <path d="M3.5 10 12 3.5l8.5 6.5v10.5h-17ZM10 20.5V15h4v5.5" />
+      </symbol>
+      <symbol id="i-notebook" viewBox="0 0 24 24">
+        <path d="M6.5 3.5h11a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-11ZM4.5 7.5h4M4.5 12h4M4.5 16.5h4M11 8h4.5M11 11.5h4.5" />
+      </symbol>
+      <symbol id="i-sheet" viewBox="0 0 24 24">
+        <path d="M6 3.5h8l4.5 4.5v12.5H6ZM14 3.5V8h4.5M9 12h6.5M9 15h6.5M9 18h4" />
+      </symbol>
+      <symbol id="i-thermo" viewBox="0 0 24 24">
+        <path d="M10 13.6V5.5a2 2 0 0 1 4 0v8.1a4 4 0 1 1-4 0ZM12 10v6.5M16.5 6H18M16.5 9H18" />
+      </symbol>
+      <symbol id="i-drop" viewBox="0 0 24 24">
+        <path d="M12 3.5c3 3.6 6 6.9 6 10.4a6 6 0 0 1-12 0c0-3.5 3-6.8 6-10.4ZM9.3 14.4a2.8 2.8 0 0 0 2.3 2.6" />
+      </symbol>
+      <symbol id="i-volume" viewBox="0 0 24 24">
+        <rect x="3.5" y="3.5" width="17" height="17" rx="2" />
+        <path d="M12 7.5c1.9 2.3 3.6 4.3 3.6 6.3a3.6 3.6 0 0 1-7.2 0c0-2 1.7-4 3.6-6.3Z" fill="currentColor" />
+      </symbol>
+      <symbol id="i-fir" viewBox="0 0 24 24">
+        <path d="M12 3 7.5 9.5h2.8L6 15.5h12l-4.3-6h2.8ZM12 15.5v5M4 20.5h16" />
+      </symbol>
+      <symbol id="i-storm" viewBox="0 0 24 24">
+        <path
+          d="M8 16H7a4 4 0 0 1-.6-7.95 5.5 5.5 0 0 1 10.7 1.45A3.25 3.25 0 0 1 17 16h-1M13.2 12l-2.6 4.2h3.5L11.5 21"
+        />
+      </symbol>
+      <symbol id="i-rain" viewBox="0 0 24 24">
+        <path
+          d="M7 15a4 4 0 0 1-.6-7.95 5.5 5.5 0 0 1 10.7 1.45A3.25 3.25 0 0 1 17 15ZM8.5 18l-1 2.5M12.5 18l-1 2.5M16.5 18l-1 2.5"
+        />
+      </symbol>
+      <symbol id="i-wind" viewBox="0 0 24 24">
+        <path d="M3 9h10.5a2.5 2.5 0 1 0-2.5-2.5M3 13h14.5a2.5 2.5 0 1 1-2.5 2.5M3 17h6" />
+      </symbol>
+      <symbol id="i-window" viewBox="0 0 24 24">
+        <path d="M5.5 3.5h13v17h-13ZM12 3.5v17M5.5 12h13M3.5 20.5h17" />
+      </symbol>
+      <symbol id="i-balance" viewBox="0 0 24 24">
+        <path
+          d="M12 4v16M8.5 20h7M5 7.5h14M5 7.5l-2.5 6h5ZM19 7.5l-2.5 6h5ZM2.5 13.5a2.5 2.5 0 0 0 5 0M16.5 13.5a2.5 2.5 0 0 0 5 0"
+        />
+      </symbol>
+      <symbol id="i-compass" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="8.5" />
+        <path d="m15.2 8.8-1.8 4.6-4.6 1.8 1.8-4.6Z" />
+      </symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24">
+        <path d="M3.5 3.5v17h17M7 15l3.5-4 3 2.5 5-6" />
+      </symbol>
+      <symbol id="i-download" viewBox="0 0 24 24">
+        <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
+      </symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24">
+        <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 19.5h14" />
+      </symbol>
+      <symbol id="i-printer" viewBox="0 0 24 24">
+        <path
+          d="M7 9V3.5h10V9M7 17H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 9h14a1.5 1.5 0 0 1 1.5 1.5v5A1.5 1.5 0 0 1 19 17h-2M7 14h10v6.5H7Z"
+        />
+      </symbol>
+    </svg>
     <header class="top">
       <div class="top-inner">
         <h1 class="brand">
@@ -27,11 +100,22 @@
           Maison Bloc
         </h1>
         <nav class="tabs" aria-label="Écrans">
-          <a href="#releve" data-tab="releve">Relevé</a>
-          <a href="#surface" data-tab="surface">Surface</a>
-          <a href="#maison" data-tab="maison">Maison</a>
-          <a href="#carnet" data-tab="carnet">Carnet</a>
-          <a href="#fiche" data-tab="fiche">Fiche</a>
+          <a href="#releve" data-tab="releve"
+            ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-gauge" /></svg><span>Relevé</span></a
+          >
+          <a href="#surface" data-tab="surface"
+            ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wall" /></svg><span>Surface</span></a
+          >
+          <a href="#maison" data-tab="maison"
+            ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-house" /></svg><span>Maison</span></a
+          >
+          <a href="#carnet" data-tab="carnet"
+            ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-notebook" /></svg
+            ><span>Carnet</span></a
+          >
+          <a href="#fiche" data-tab="fiche"
+            ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-sheet" /></svg><span>Fiche</span></a
+          >
         </nav>
         <p id="storeStatus" class="store-status" hidden></p>
       </div>
@@ -43,10 +127,13 @@
         <h2 id="releveTitle">Relevé</h2>
         <form id="checkForm" class="readings" novalidate autocomplete="off">
           <fieldset class="reading" data-side="indoor">
-            <legend>Intérieur</legend>
+            <legend>
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-house" /></svg>Intérieur
+            </legend>
             <div class="signed">
               <label
-                >Température <span class="unit">°C</span>
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-thermo" /></svg>Température
+                <span class="unit">°C</span>
                 <input id="indoorT" name="indoorT" type="text" inputmode="decimal" enterkeyhint="next" />
               </label>
               <button
@@ -61,21 +148,28 @@
             </div>
             <p class="field-error" id="indoorT-error" hidden></p>
             <label
-              >Humidité relative <span class="unit">%</span>
+              ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-drop" /></svg>Humidité relative
+              <span class="unit">%</span>
               <input id="indoorRh" name="indoorRh" type="text" inputmode="decimal" enterkeyhint="next" />
             </label>
             <p class="field-error" id="indoorRh-error" hidden></p>
             <div class="ah-box">
-              <span class="ah-label">Humidité absolue</span>
+              <span class="ah-label"
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-volume" /></svg>Humidité
+                absolue</span
+              >
               <output id="indoorAH" class="ah" for="indoorT indoorRh"></output>
               <span id="indoorTag" class="side-tag" hidden></span>
             </div>
           </fieldset>
           <fieldset class="reading" data-side="outdoor">
-            <legend>Extérieur</legend>
+            <legend>
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-fir" /></svg>Extérieur
+            </legend>
             <div class="signed">
               <label
-                >Température <span class="unit">°C</span>
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-thermo" /></svg>Température
+                <span class="unit">°C</span>
                 <input id="outdoorT" name="outdoorT" type="text" inputmode="decimal" enterkeyhint="next" />
               </label>
               <button
@@ -90,12 +184,16 @@
             </div>
             <p class="field-error" id="outdoorT-error" hidden></p>
             <label
-              >Humidité relative <span class="unit">%</span>
+              ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-drop" /></svg>Humidité relative
+              <span class="unit">%</span>
               <input id="outdoorRh" name="outdoorRh" type="text" inputmode="decimal" enterkeyhint="done" />
             </label>
             <p class="field-error" id="outdoorRh-error" hidden></p>
             <div class="ah-box">
-              <span class="ah-label">Humidité absolue</span>
+              <span class="ah-label"
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-volume" /></svg>Humidité
+                absolue</span
+              >
               <output id="outdoorAH" class="ah" for="outdoorT outdoorRh"></output>
               <span id="outdoorTag" class="side-tag" hidden></span>
             </div>
@@ -121,16 +219,27 @@
           </div>
           <fieldset class="conditions">
             <legend class="visually-hidden">Conditions</legend>
-            <label class="switch"><span>Orage en cours</span><input id="storm" type="checkbox" role="switch" /></label>
             <label class="switch"
-              ><span>Il a plu ces dernières heures</span><input id="recentRain" type="checkbox" role="switch"
+              ><span
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-storm" /></svg>Orage en
+                cours</span
+              ><input id="storm" type="checkbox" role="switch"
+            /></label>
+            <label class="switch"
+              ><span
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-rain" /></svg>Il a plu ces
+                dernières heures</span
+              ><input id="recentRain" type="checkbox" role="switch"
             /></label>
           </fieldset>
         </form>
 
         <div class="aside">
           <div id="advice" class="advice" data-tone="empty" aria-live="polite">
-            <p id="adviceVerdict" class="advice-verdict" hidden></p>
+            <p id="adviceVerdict" class="advice-verdict" hidden>
+              <svg class="icon" aria-hidden="true" focusable="false"><use id="adviceVerdictIcon" href="#i-wind" /></svg
+              ><span id="adviceVerdictText"></span>
+            </p>
             <p id="adviceTitle" class="advice-title">Saisir les relevés intérieur et extérieur.</p>
             <ul id="adviceLines" class="advice-lines"></ul>
             <p id="dewPointLine" class="dew-point" hidden></p>
@@ -141,7 +250,10 @@
               >Note <span class="hint">(facultatif)</span>
               <textarea id="note" rows="2" maxlength="1000"></textarea>
             </label>
-            <button type="submit" class="btn primary">Enregistrer dans le carnet</button>
+            <button type="submit" class="btn primary">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-notebook" /></svg>Enregistrer dans le
+              carnet
+            </button>
             <p id="saveStatus" class="flash" role="status" hidden></p>
           </form>
         </div>
@@ -162,7 +274,8 @@
           <p id="surfaceLast" class="hint" hidden></p>
           <div class="signed">
             <label
-              >Température de la surface <span class="unit">°C</span>
+              ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wall" /></svg>Température de la
+              surface <span class="unit">°C</span>
               <input id="surfaceT" type="text" inputmode="decimal" />
             </label>
             <button
@@ -177,10 +290,13 @@
           </div>
           <p class="field-error" id="surfaceT-error" hidden></p>
           <fieldset class="reading">
-            <legend>Air de la pièce</legend>
+            <legend>
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-house" /></svg>Air de la pièce
+            </legend>
             <div class="signed">
               <label
-                >Température <span class="unit">°C</span>
+                ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-thermo" /></svg>Température
+                <span class="unit">°C</span>
                 <input id="surfIndoorT" type="text" inputmode="decimal" />
               </label>
               <button
@@ -194,7 +310,8 @@
               </button>
             </div>
             <label
-              >Humidité relative <span class="unit">%</span>
+              ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-drop" /></svg>Humidité relative
+              <span class="unit">%</span>
               <input id="surfIndoorRh" type="text" inputmode="decimal" />
             </label>
             <p class="hint">Les mêmes valeurs que l'intérieur du relevé.</p>
@@ -208,7 +325,10 @@
             <ul id="surfaceResultLines" class="advice-lines"></ul>
           </div>
           <div class="save">
-            <button id="surfaceSave" type="button" class="btn primary" hidden>Enregistrer dans le carnet</button>
+            <button id="surfaceSave" type="button" class="btn primary" hidden>
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-notebook" /></svg>Enregistrer dans le
+              carnet
+            </button>
             <p id="surfaceSaveNote" class="hint" hidden>
               Pour enregistrer, compléter aussi l'extérieur dans le relevé.
             </p>
@@ -232,7 +352,9 @@
         </label>
 
         <div class="col">
-          <h3>Façades</h3>
+          <h3 class="with-icon">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-compass" /></svg>Façades
+          </h3>
           <ul id="facadeList" class="items"></ul>
           <form id="facadeForm" class="add">
             <label>Nom <input id="facadeName" type="text" maxlength="200" placeholder="Côté jardin" required /></label>
@@ -256,9 +378,10 @@
             <button type="submit" class="btn">Ajouter la façade</button>
           </form>
         </div>
-
         <div class="col">
-          <h3>Surfaces froides</h3>
+          <h3 class="with-icon">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wall" /></svg>Surfaces froides
+          </h3>
           <p class="hint">
             Là où la condensation peut se former : plancher au-dessus de la cave, mur nord, angle de pièce…
           </p>
@@ -283,7 +406,9 @@
 
         <div id="carnetCharts" class="col">
           <section id="trend" aria-labelledby="trendTitle" hidden>
-            <h3 id="trendTitle">Tendance</h3>
+            <h3 id="trendTitle" class="with-icon">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-chart" /></svg>Tendance
+            </h3>
             <div id="trendWindows" class="segmented" role="group" aria-label="Période"></div>
             <div id="trendResult" class="advice compact" data-tone="empty" aria-live="polite">
               <p id="trendResultTitle" class="advice-title"></p>
@@ -310,7 +435,9 @@
           </section>
 
           <section id="surfaces" aria-labelledby="surfacesTitle" hidden>
-            <h3 id="surfacesTitle">Surfaces froides</h3>
+            <h3 id="surfacesTitle" class="with-icon">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-wall" /></svg>Surfaces froides
+            </h3>
             <p class="hint">
               Un point par jour : la pire marge du jour au-dessus du point de rosée. Sous 0 °C (rouge), l'eau se dépose
               ; jusqu'à 1 °C (ocre), c'est dans l'imprécision du thermomètre. La marge suit aussi le froid de la saison
@@ -326,9 +453,13 @@
           </p>
           <p id="backupStatus" class="backup-status"></p>
           <div class="row">
-            <button id="exportBtn" type="button" class="btn primary">Enregistrer une copie</button>
+            <button id="exportBtn" type="button" class="btn primary">
+              <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-download" /></svg>Enregistrer une
+              copie
+            </button>
             <label class="btn file"
-              >Reprendre une copie<input id="importFile" type="file" accept="application/json,.json"
+              ><svg class="icon" aria-hidden="true" focusable="false"><use href="#i-upload" /></svg>Reprendre une
+              copie<input id="importFile" type="file" accept="application/json,.json"
             /></label>
           </div>
           <div id="importChoice" class="import-choice" hidden>
@@ -347,7 +478,6 @@
             <button id="installBtn" type="button" class="btn" hidden>Installer</button>
           </div>
         </div>
-
         <div class="col col-log">
           <h3 id="logTitle" hidden>Relevés</h3>
           <ol id="logList" class="log"></ol>
@@ -358,7 +488,9 @@
       <section id="screen-fiche" class="screen" data-screen="fiche" aria-labelledby="ficheTitle" hidden>
         <div class="row no-print">
           <h2 id="ficheTitle">Fiche à imprimer</h2>
-          <button id="printBtn" type="button" class="btn">Imprimer</button>
+          <button id="printBtn" type="button" class="btn">
+            <svg class="icon" aria-hidden="true" focusable="false"><use href="#i-printer" /></svg>Imprimer
+          </button>
         </div>
         <div class="sheet">
           <h2 class="print-only">Aérer au bon moment — fiche repère</h2>

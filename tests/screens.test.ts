@@ -97,12 +97,14 @@ describe("quick check", () => {
       "20",
     ]);
     expect(text("#adviceVerdict")).toBe("Aérer");
+    expect(document.getElementById("adviceVerdictIcon")?.getAttribute("href")).toBe("#i-wind");
   });
 
   it("keeps the measured drier side under a storm, and marks none within the band", () => {
     fillCheck();
     tick("#storm");
     expect(text("#adviceVerdict")).toBe("Orage");
+    expect(document.getElementById("adviceVerdictIcon")?.getAttribute("href")).toBe("#i-storm");
     expect($("#ahScale").dataset.tone).toBe("alert");
     expect($("#checkForm").dataset.drier).toBe("outdoor");
     tick("#storm", false);

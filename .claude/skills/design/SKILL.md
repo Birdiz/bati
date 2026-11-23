@@ -39,6 +39,13 @@ Lora 500/600 (titles, legends, verdict title, scale gap, dew point line), never 
 - Every chart of the Carnet shares the same horizontal axis (same period, `carnetAxis`) and the same width (content width of the Carnet screen minus the figure's inset), redrawn on resize.
 - Surface froide screen: the reminder `#surfaceLast` is a muted hint under the surface picker.
 
+## Icons
+
+- One inline sprite at the top of `<body>` (`svg.sprite`, `<symbol id="i-…">`), used with `<svg class="icon" aria-hidden="true" focusable="false"><use href="#i-…" /></svg>`. Inline because the app is offline and the CSP has no `'unsafe-inline'` for styles: no icon font, no external file to cache.
+- Drawing: 24 px grid, line only (1.75 stroke, round caps and joins, `stroke: currentColor` set on `.icon`), small fills with `fill="currentColor" stroke="none"`. Same pared-down geometry as `.brand-mark`. Size in `em`, so an icon follows the text it sits in.
+- Where: tab bar (icon above the label, 25 px, thicker stroke on the current tab), field labels and legends in `--accent` (thermometer, droplet, house inside, fir tree outside, wall for a cold surface, cube for absolute humidity), switches in `--muted` turning `--accent` when on (storm cloud, rain), h3 with `.with-icon`, buttons, and the verdict badge (`VERDICT_ICON` in `src/ui/check.ts`: wind to air, window to keep shut, storm, balance).
+- Icons are decoration: the text next to them always says the same thing. Never an icon alone as the only label.
+
 ## Temperature fields: the "±" button
 
 Phone decimal keypads (`inputmode="decimal"` on iPhone) have no minus key. Every temperature field sits in a `.signed` wrapper with a `.sign-toggle` button `[data-sign-for="<input id>"]` (`src/ui/sign.ts`): it flips the sign with a true minus (`toggleSign`), hands the focus back, and its `aria-pressed` says whether the value is negative. The button is outside the `<label>` so its name does not join the field's, and overlays the label's bottom right so the label text keeps the full width. Parsing accepts hyphen, true minus and en dash; a lone sign is "still being typed": no error (`isUnfinishedNumber`, `pendingField`).
@@ -46,7 +53,7 @@ Phone decimal keypads (`inputmode="decimal"` on iPhone) have no minus key. Every
 ## Layout
 
 - Phones and tablets in portrait: one column, 720 px at most, tab bar fixed at the bottom.
-- `@media screen and (min-width: 1024px)`: content up to 1200 px; the header (which holds the `nav.tabs` in the markup) becomes a sticky top bar, `--top-h` high, tabs on the right with the current one underlined.
+- `@media screen and (min-width: 1024px)`: content up to 1200 px; the header (which holds the `nav.tabs` in the markup) becomes a sticky top bar, `--top-h` high, tabs on the right, icon beside the label (21 px), the current one underlined.
   - `.split` (Relevé, Surface): inputs in a 7fr column, `.aside` (verdict, then save) in a 5fr column, `position: sticky` under the top bar, so the verdict stays in view when the page scrolls.
   - `.columns` (Maison, Carnet): two `.col` halves; what comes before them spans both. Carnet: trend and backup left, entries right; an empty log falls back to one 720 px column.
   - Fiche: rules beside the AH table.
