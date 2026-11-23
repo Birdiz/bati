@@ -16,6 +16,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:offline": "tsx scripts/offline-check.ts",
+    "test:update": "tsx scripts/update-check.ts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm test"
   },
   "dependencies": {

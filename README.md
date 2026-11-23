@@ -58,13 +58,14 @@ npm install
 npm run dev
 ```
 
-| Command                | Role                                                                               |
-| ---------------------- | ---------------------------------------------------------------------------------- |
-| `npm run check`        | types, lint, formatting and tests, before every commit                             |
-| `npm test`             | tests only                                                                         |
-| `npm run build`        | site in `dist/`, server in `dist-server/`                                          |
-| `npm start`            | serves `dist/` on `PORT` (3000 by default)                                         |
-| `npm run test:offline` | after a build: real offline check, screenshots and printed sheet in `out/offline/` |
+| Command                | Role                                                                                      |
+| ---------------------- | ----------------------------------------------------------------------------------------- |
+| `npm run check`        | types, lint, formatting and tests, before every commit                                    |
+| `npm test`             | tests only                                                                                |
+| `npm run build`        | site in `dist/`, server in `dist-server/`                                                 |
+| `npm start`            | serves `dist/` on `PORT` (3000 by default)                                                |
+| `npm run test:offline` | after a build: real offline check, screenshots and printed sheet in `out/offline/`        |
+| `npm run test:update`  | after a build: update from a previous version, on desktop (reload) and phone (background) |
 
 The service worker is only registered in production builds: to try offline locally, `npm run build` then `npm start`.
 
@@ -79,6 +80,10 @@ The service worker is only registered in production builds: to try offline local
 3. Airplane mode on. Close the app (swipe it away), reopen it from the home screen.
 4. Go through each tab; save a check; Carnet → "Enregistrer une copie" (the file goes to Files); "Reprendre une copie" from Files; Fiche → Imprimer (preview).
 5. Close and reopen in airplane mode: the log and the house profile are still there.
+
+## Update check
+
+`npm run test:update` serves a copy of the build as the "previous" version (another service worker version, a marker on the page), installs it in Chromium, then deploys the build and checks that the new version arrives: on desktop, the second plain reload after a deploy shows it; on a phone, the app going to the background hands over and reloads unseen. CI runs it after the offline check.
 
 ## Deployment
 
