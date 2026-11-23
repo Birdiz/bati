@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { Facade, HouseProfile } from "../src/domain/house/profile";
 import { type CheckInput, decideAdvice } from "../src/domain/humidity/advice";
 import { checkSurface } from "../src/domain/humidity/surface";
-import { adviceText, fmt, list, parseDecimal, surfaceText } from "../src/text/fr";
+import { adviceText, fmt, list, parseDecimal, signed, surfaceText, trendText } from "../src/text/fr";
 
 const facade = (id: string, name: string, orientation: Facade["orientation"], wet = false, up = false): Facade => ({
   id,
@@ -104,5 +104,42 @@ describe("surfaceText", () => {
     expect(surfaceText(checkSurface(14, indoor)).lines[0]).toMatch(/^La surface est 2,0 °C sous le point de rosée/);
     expect(surfaceText(checkSurface(16.5, indoor))).toMatchObject({ title: "À la limite" });
     expect(surfaceText(checkSurface(19, indoor))).toMatchObject({ title: "Pas de condensation", tone: "go" });
+  });
+});
+
+describe("trendText", () => {
+  const base = { recent: 1.1, previous: 1.9, recentDays: 5, previousDays: 1 };
+
+  it("asks for more readings, with the counts so far", () => {
+    const t = trendText({ kind: "notEnough", recentDays: 2, previousDays: 0 });
+    expect(t).toMatchObject({ title: "Pas encore de comparaison", tone: "neutral" });
+    expect(t.lines[0]).toContain("au moins 3 jours de relevés sur les 14 derniers jours");
+    expect(t.lines[0]).toContain("(pour l'instant : 2 et 0)");
+  });
+
+  it("says lower with a true minus sign, both means and the day counts", () => {
+    const t = trendText({ kind: "lower", ...base, delta: -0.8 });
+    expect(t.title).toBe("Excès d'humidité en baisse : −0,8 g/m³");
+    expect(t.tone).toBe("go");
+    expect(t.lines[0]).toBe(
+      "1,1 g/m³ en moyenne sur les 14 derniers jours (5 jours de relevés), contre 1,9 g/m³ les 14 jours d'avant (1 jour).",
+    );
+    expect(t.lines[1]).toContain("rend moins d'eau");
+  });
+
+  it("says higher in ochre, and stable within the band", () => {
+    expect(trendText({ kind: "higher", ...base, delta: 0.8 })).toMatchObject({
+      title: "Excès d'humidité en hausse : +0,8 g/m³",
+      tone: "alert",
+    });
+    const s = trendText({ kind: "stable", ...base, delta: -0.3 });
+    expect(s.title).toBe("Excès d'humidité stable");
+    expect(s.lines[1]).toContain("(−0,3 g/m³) reste sous 0,5 g/m³");
+  });
+
+  it("signs without a sign on zero", () => {
+    expect(signed(0.04)).toBe("0,0");
+    expect(signed(-0.04)).toBe("0,0");
+    expect(signed(1.25)).toBe("+1,3");
   });
 });

@@ -5,7 +5,8 @@
 import type { Advice } from "../domain/humidity/advice";
 import type { BackupError } from "../domain/backup";
 import type { HouseProfile, Orientation, Ventilation } from "../domain/house/profile";
-import type { AdviceCode } from "../domain/humidity/advice";
+import { type AdviceCode, NEUTRAL_BAND } from "../domain/humidity/advice";
+import { COMPARE_DAYS, type DayPoint, type ExcessTrend, MIN_DAYS, type TrendWindow } from "../domain/humidity/trend";
 import type { ReadingError } from "../domain/humidity/psychrometrics";
 import type { SurfaceCheck } from "../domain/humidity/surface";
 
@@ -172,6 +173,60 @@ export function surfaceText(c: SurfaceCheck): AdviceText {
     tone: "go",
     lines: [`${m} °C de marge au-dessus du point de rosée de la pièce (${td} °C).`],
   };
+}
+
+export const TREND_WINDOW_LABEL: Record<TrendWindow, string> = { "30": "30 jours", "90": "90 jours", all: "Tout" };
+
+/** "+0,8" or "−0,8", with a true minus sign. */
+export function signed(x: number): string {
+  const s = fmt(Math.abs(x));
+  return s === fmt(0) ? s : `${x < 0 ? "−" : "+"}${s}`;
+}
+
+const days = (n: number) => `${n} jour${n > 1 ? "s" : ""}`;
+
+/** The comparison of the moisture excess, last COMPARE_DAYS days against the ones before. */
+export function trendText(t: ExcessTrend): AdviceText {
+  if (t.kind === "notEnough")
+    return {
+      title: "Pas encore de comparaison",
+      tone: "neutral",
+      lines: [
+        `Il faut au moins ${MIN_DAYS} jours de relevés sur les ${COMPARE_DAYS} derniers jours, et autant sur les ${COMPARE_DAYS} jours d'avant (pour l'instant : ${t.recentDays} et ${t.previousDays}).`,
+      ],
+    };
+  const figures = `${fmt(t.recent)} g/m³ en moyenne sur les ${COMPARE_DAYS} derniers jours (${days(t.recentDays)} de relevés), contre ${fmt(t.previous)} g/m³ les ${COMPARE_DAYS} jours d'avant (${days(t.previousDays)}).`;
+  if (t.kind === "stable")
+    return {
+      title: "Excès d'humidité stable",
+      tone: "neutral",
+      lines: [
+        figures,
+        `L'écart (${signed(t.delta)} g/m³) reste sous ${fmt(NEUTRAL_BAND)} g/m³ : les hygromètres ne font pas la différence.`,
+      ],
+    };
+  if (t.kind === "lower")
+    return {
+      title: `Excès d'humidité en baisse : ${signed(t.delta)} g/m³`,
+      tone: "go",
+      lines: [
+        figures,
+        "À usage comparable, la maison rend moins d'eau à l'air : les murs sèchent, ou l'aération est plus efficace.",
+      ],
+    };
+  return {
+    title: `Excès d'humidité en hausse : ${signed(t.delta)} g/m³`,
+    tone: "alert",
+    lines: [figures, "À usage comparable, la maison rend plus d'eau à l'air qu'avant."],
+  };
+}
+
+/** Accessible name of the trend chart: what a screen reader announces instead of the curves. */
+export function trendChartLabel(points: readonly DayPoint[], from: string, to: string): string {
+  const first = points[0];
+  const last = points.at(-1);
+  if (!first || !last) return "";
+  return `Courbes sur ${days(points.length)} de relevés, du ${from} au ${to}. Excès d'humidité : ${fmt(first.excess)} g/m³ le premier jour, ${fmt(last.excess)} g/m³ le dernier.`;
 }
 
 /** The rules as printed on the reference sheet. */

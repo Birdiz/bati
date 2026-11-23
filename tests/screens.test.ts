@@ -221,6 +221,81 @@ describe("log", () => {
   });
 });
 
+describe("log trend", () => {
+  /** A stored entry at noon UTC (the same calendar day in any European time zone). */
+  const stored = (day: string, indoorAH: number, outdoorAH: number) => ({
+    id: `t-${day}-${indoorAH}`,
+    at: `${day}T12:00:00.000Z`,
+    indoor: { t: 20, rh: 60 },
+    outdoor: { t: 8, rh: 85 },
+    conditions: { storm: false, recentRain: false },
+    computed: { indoorAH, outdoorAH, indoorDewPoint: 12, code: "drierOutside", formula: "test" },
+  });
+
+  function startWith(entries: ReturnType<typeof stored>[], extra: Record<string, string> = {}): void {
+    document.body.innerHTML = body;
+    store = memoryStorage({ [KEYS.log]: JSON.stringify(entries), ...extra });
+    app = startApp(new AppState(store, () => new Date("2026-11-22T12:00:00Z")));
+    app.go("carnet");
+  }
+
+  /** Excess 3 g/m³ from 26 Oct to 1 Nov, then 2 g/m³ from 16 to 22 Nov (an 8-day gap in between). */
+  const autumn = [
+    ...["10-26", "10-27", "10-28", "10-29", "10-30", "10-31", "11-01"].map((d) => stored(`2026-${d}`, 10, 7)),
+    ...["11-16", "11-17", "11-18", "11-19", "11-20", "11-21", "11-22"].map((d) => stored(`2026-${d}`, 9, 7)),
+  ];
+
+  it("is absent from an empty log", () => {
+    app.go("carnet");
+    expect($("#trend").hidden).toBe(true);
+    expect($("#logTitle").hidden).toBe(true);
+  });
+
+  it("waits for a second day before drawing, and for 3 days per period before comparing", () => {
+    fillCheck();
+    $<HTMLFormElement>("#saveForm").requestSubmit();
+    app.go("carnet");
+    expect($("#trend").hidden).toBe(false);
+    expect($("#logTitle").hidden).toBe(false);
+    expect($("#trendFigure").hidden).toBe(true);
+    expect($("#trendFew").hidden).toBe(false);
+    expect(text("#trendResultTitle")).toBe("Pas encore de comparaison");
+    expect(text("#trendResultLines")).toContain("(pour l'instant : 1 et 0)");
+  });
+
+  it("compares the excess and draws the three series, broken over the gap", () => {
+    startWith(autumn);
+    expect($("#trendResult").dataset.tone).toBe("go");
+    expect(text("#trendResultTitle")).toBe("Excès d'humidité en baisse : −1,0 g/m³");
+    expect($("#trendFigure").hidden).toBe(false);
+    const svg = $("#trendChart svg");
+    expect(svg.getAttribute("role")).toBe("img");
+    expect(svg.getAttribute("aria-label")).toContain("Courbes sur 14 jours de relevés, du 26 oct. au 22 nov.");
+    for (const s of ["excess", "indoor", "outdoor"]) {
+      expect(svg.querySelectorAll(`[data-series="${s}"] path`)).toHaveLength(2);
+      expect(svg.querySelectorAll(`[data-series="${s}"] circle`)).toHaveLength(14);
+    }
+    expect(svg.querySelector(".x-labels .end")?.textContent).toBe("22 nov.");
+  });
+
+  it("shows 90 days by default and remembers the chosen period on the device", () => {
+    startWith(autumn);
+    expect($('[data-window="90"]').getAttribute("aria-pressed")).toBe("true");
+    $('[data-window="30"]').click();
+    expect($('[data-window="30"]').getAttribute("aria-pressed")).toBe("true");
+    expect(store.dump()[KEYS.trendWindow]).toBe('"30"');
+    // 30 days back from 22 Nov starts on 24 Oct: every point stays.
+    expect(document.querySelectorAll('#trendChart [data-series="excess"] circle')).toHaveLength(14);
+
+    startWith([stored("2026-06-01", 12, 11), ...autumn], { [KEYS.trendWindow]: '"30"' });
+    expect($('[data-window="30"]').getAttribute("aria-pressed")).toBe("true");
+    expect(document.querySelectorAll('#trendChart [data-series="excess"] circle')).toHaveLength(14);
+    $('[data-window="all"]').click();
+    expect(document.querySelectorAll('#trendChart [data-series="excess"] circle')).toHaveLength(15);
+    expect($("#trendChart .x-labels .start").textContent).toBe("1 juin");
+  });
+});
+
 describe("reference sheet", () => {
   it("fills the rules and the 5–40 °C table", () => {
     app.go("fiche");

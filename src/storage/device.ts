@@ -11,6 +11,7 @@ export const KEYS = {
   log: "bati-log",
   draft: "bati-draft",
   lastBackup: "bati-last-backup",
+  trendWindow: "bati-trend-window",
 } as const;
 
 export type KeyValue = Pick<Storage, "getItem" | "setItem" | "removeItem">;

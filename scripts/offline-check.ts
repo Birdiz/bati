@@ -132,6 +132,12 @@ try {
   // 6. Log, export.
   await page.goto(`${BASE}#carnet`);
   check("log shows 2 entries", (await page.locator("#logList li").count()) === 2);
+  check(
+    "trend shown, waiting for a second day",
+    (await page.locator("#trend").isVisible()) &&
+      (await page.locator("#trendFew").isVisible()) &&
+      (await text(page, "#trendResultTitle")) === "Pas encore de comparaison",
+  );
   const [download] = await Promise.all([page.waitForEvent("download"), page.click("#exportBtn")]);
   const exportPath = `${OUT}/${download.suggestedFilename()}`;
   await download.saveAs(exportPath);

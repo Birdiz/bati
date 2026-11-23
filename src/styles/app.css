@@ -563,6 +563,115 @@ input[role="switch"]:focus-visible {
   text-wrap: pretty;
 }
 
+/* Trend (Carnet): the comparison in a compact advice box, then the chart. Series by token, never inline. */
+.advice.compact .advice-title {
+  font-size: 22px;
+}
+.advice.compact[data-tone="empty"] .advice-title {
+  font-size: 18px;
+}
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+.segmented .btn {
+  flex: 1;
+}
+.segmented .btn[aria-pressed="true"] {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--on-accent);
+}
+.trend-chart {
+  margin: 14px 0 0;
+  padding: 10px 8px 8px;
+  background: var(--surface);
+  border: 1.5px solid var(--rule);
+  border-radius: 6px;
+}
+.trend-chart svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.trend-chart .grid line {
+  stroke: var(--rule);
+  stroke-width: 1;
+}
+.trend-chart .grid line.zero {
+  stroke: var(--field-rule);
+  stroke-width: 1.5;
+}
+.trend-chart text {
+  fill: var(--muted);
+  font: 400 12px var(--font);
+}
+.trend-chart .y-label {
+  text-anchor: end;
+  dominant-baseline: middle;
+}
+.trend-chart .x-labels text {
+  text-anchor: middle;
+}
+.trend-chart .x-labels .start {
+  text-anchor: start;
+}
+.trend-chart .x-labels .end {
+  text-anchor: end;
+}
+.trend-chart .series path {
+  fill: none;
+  stroke: var(--series);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.trend-chart .series circle {
+  fill: var(--series);
+}
+[data-series="excess"] {
+  --series: var(--text);
+}
+[data-series="indoor"] {
+  --series: var(--accent);
+}
+[data-series="outdoor"] {
+  --series: var(--muted);
+}
+.trend-chart .series[data-series="excess"] path {
+  stroke-width: 2.5;
+}
+.trend-chart .series[data-series="outdoor"] path {
+  stroke-dasharray: 4 3;
+}
+.trend-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 8px 0 0;
+  padding: 0 4px;
+  list-style: none;
+  color: var(--muted);
+  font-size: 15px;
+}
+.trend-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.trend-legend li::before {
+  content: "";
+  width: 20px;
+  border-top: 2px solid var(--series);
+}
+.trend-legend [data-series="excess"]::before {
+  border-top-width: 3px;
+}
+.trend-legend [data-series="outdoor"]::before {
+  border-top-style: dashed;
+}
+
 /* Save */
 .save {
   display: flex;

@@ -209,6 +209,33 @@
       <section id="screen-carnet" data-screen="carnet" aria-labelledby="carnetTitle" hidden>
         <h2 id="carnetTitle">Carnet</h2>
         <p id="logEmpty" class="hint">Aucun relevé enregistré. Les relevés restent sur cet appareil.</p>
+
+        <section id="trend" aria-labelledby="trendTitle" hidden>
+          <h3 id="trendTitle">Tendance</h3>
+          <div id="trendWindows" class="segmented" role="group" aria-label="Période"></div>
+          <div id="trendResult" class="advice compact" data-tone="empty" aria-live="polite">
+            <p id="trendResultTitle" class="advice-title"></p>
+            <ul id="trendResultLines" class="advice-lines"></ul>
+          </div>
+          <figure id="trendFigure" class="trend-chart">
+            <div id="trendChart"></div>
+            <figcaption>
+              <ul class="trend-legend">
+                <li data-series="excess">Excès (intérieur − extérieur)</li>
+                <li data-series="indoor">Intérieur</li>
+                <li data-series="outdoor">Extérieur</li>
+              </ul>
+            </figcaption>
+          </figure>
+          <p id="trendFew" class="hint" hidden>La courbe apparaît à partir de deux jours de relevés sur la période.</p>
+          <p class="hint">
+            L'excès d'humidité, c'est l'humidité absolue intérieure moins l'extérieure : l'eau que la maison ajoute à
+            l'air (murs, sol, occupants), sans l'effet de la saison. Pour comparer, prenez vos relevés dans les mêmes
+            conditions, pas juste après une douche ou une cuisson. Un point par jour : la moyenne de ses relevés.
+          </p>
+        </section>
+
+        <h3 id="logTitle" hidden>Relevés</h3>
         <ol id="logList" class="log"></ol>
 
         <h3>Sauvegarde</h3>
