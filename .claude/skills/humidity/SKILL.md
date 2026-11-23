@@ -34,6 +34,16 @@ At risk when surface ≤ indoor dew point; `nearLimit` within 1 °C (infrared th
 
 An entry stores the readings and what was computed then, with the formula id: changing the formula must never rewrite history. Backup `bati-export` v1: invalid or duplicate entries dropped and counted, newer versions refused. Merge = log union by id (existing wins) and the file's profile only if the device has none.
 
+## Trend (`trend.ts`, Carnet)
+
+Question: does the house give less water to the air over time? Indoor AH alone mostly follows the outdoor air (falls all autumn, rises in spring whatever the walls do): **do not use it as the indicator**. The indicator is the **moisture excess = indoor AH − outdoor AH** (g/m³), the water the house adds to the air, season removed (same quantity as EN ISO 13788 internal humidity classes). Decided 2026-11-23:
+
+- One point per calendar day of the user (`dayOf` injected): mean of that day's entries, from the values computed when they were saved. A day measured five times weighs as much as a day measured once.
+- Comparison (`compareExcess`): mean daily excess of the last 14 days (today included) against the 14 days before, over the whole log whatever window is shown. At least 3 days with readings in each period, else no comparison. Under `NEUTRAL_BAND` (0.5 g/m³) the gap is "stable"; below → lower (go tone), above → higher (alert tone, not stop: a rise is not a danger by itself).
+- The wording stays causal and modest: "à usage comparable", lower = the walls dry or the airing works better. No ISO 13788 class thresholds without field validation.
+- Chart windows 30 / 90 days (default) / all; lines broken over gaps of more than 7 days (`MAX_GAP_DAYS`), points always drawn: nothing is drawn where nothing was measured.
+- Not recorded, so not shown: whether an advice was followed.
+
 ## Out of scope for now
 
 Tradesperson side, sensors, weather API, accounts, sync, insulation material recommendations. The house profile (`src/domain/house`) is where the materials side will plug in.

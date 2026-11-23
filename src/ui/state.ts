@@ -8,6 +8,7 @@ import type { CheckInput } from "../domain/humidity/advice";
 import type { LogEntry } from "../domain/humidity/log";
 import { sortLog } from "../domain/humidity/log";
 import { type AirReading, type ReadingError, readingError } from "../domain/humidity/psychrometrics";
+import { DEFAULT_TREND_WINDOW, TREND_WINDOWS, type TrendWindow } from "../domain/humidity/trend";
 import { KEYS, type KeyValue, loadData, readJSON, saveLog, saveProfile, writeJSON } from "../storage/device";
 import { parseDecimal } from "../text/fr";
 
@@ -92,6 +93,8 @@ export class AppState {
   /** Entries found in storage that could not be read. */
   readonly droppedOnLoad: number;
   lastBackup: string | null;
+  /** Period shown by the log's trend: a preference of this device, not part of the backup. */
+  trendWindow: TrendWindow;
   private listeners = new Set<Listener>();
 
   constructor(
@@ -106,6 +109,8 @@ export class AppState {
     this.draft = sanitizeDraft(readJSON(store, KEYS.draft));
     const lb = readJSON(store, KEYS.lastBackup);
     this.lastBackup = typeof lb === "string" ? lb : null;
+    const tw = readJSON(store, KEYS.trendWindow);
+    this.trendWindow = TREND_WINDOWS.includes(tw as TrendWindow) ? (tw as TrendWindow) : DEFAULT_TREND_WINDOW;
     if (!store) this.stored = false;
   }
 
@@ -156,6 +161,12 @@ export class AppState {
   markBackup(): void {
     this.lastBackup = this.now().toISOString();
     writeJSON(this.store, KEYS.lastBackup, this.lastBackup);
+    this.emit();
+  }
+
+  setTrendWindow(w: TrendWindow): void {
+    this.trendWindow = w;
+    writeJSON(this.store, KEYS.trendWindow, w);
     this.emit();
   }
 

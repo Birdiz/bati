@@ -11,6 +11,7 @@ import type { LogEntry } from "../domain/humidity/log";
 import { BACKUP_ERROR, CODE_LABEL, fmt } from "../text/fr";
 import { byId, downloadText, flash, h } from "./dom";
 import type { AppState } from "./state";
+import { mountTrend } from "./trend";
 
 /** After this many days without a copy, the log screen reminds the user. */
 export const BACKUP_REMINDER_DAYS = 30;
@@ -86,6 +87,7 @@ export function mountLog(state: AppState): { show(): void } {
   const importFile = byId<HTMLInputElement>("importFile");
   const choice = byId("importChoice");
   let pending: Extract<ParsedBackup, { ok: true }> | null = null;
+  const trend = mountTrend(state);
 
   function backupStatus(): string {
     if (!state.lastBackup) return state.log.length > 0 ? "Aucune copie enregistrée pour l'instant." : "";
@@ -96,6 +98,8 @@ export function mountLog(state: AppState): { show(): void } {
 
   function render(): void {
     byId("logEmpty").hidden = state.log.length > 0;
+    byId("logTitle").hidden = state.log.length === 0;
+    trend.render();
     byId("logList").replaceChildren(
       ...state.log.map((e) =>
         entryItem(e, () => {

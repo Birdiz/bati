@@ -24,6 +24,13 @@ Alegreya 500, 500 italic, 600 (titles, legends, verdict title, dew point line) a
 - **Switches**: storm and rain are `<input type="checkbox" role="switch">`, styled with `appearance: none`. Other checkboxes stay checkboxes (`accent-color`).
 - **Advice box**: `data-tone` = go / stop / alert / neutral / empty. Uppercase verdict (`CODE_LABEL`), serif title, lines with an em dash, dew point in italic under a rule.
 
+## Carnet: trend
+
+- Section `#trend` above the entries (hidden while the log is empty), `h3` "Tendance", then "Relevés" before the list.
+- Period: a `.segmented` group of `.btn.small` with `aria-pressed`, the pressed one in accent.
+- Comparison in a compact advice box (`.advice.compact`, title 22 px), same tones as the advice.
+- Chart: hand-made SVG (`src/ui/trend.ts`) whose viewBox is the real width in pixels (labels stay 12 px), 210 px high, on a surface panel. Series coloured by `--series` set per `data-series`: excess `--text` thick with 3 px dots, indoor `--accent`, outdoor `--muted` dashed. Grid in `--rule`, zero line in `--field-rule`. `role="img"` with a French `aria-label` summary. HTML legend under it.
+
 ## Constraints
 
 - The CSP has no `'unsafe-inline'` for styles: no `style=""` in markup or `setAttribute("style")`. Positions computed in scripts go through custom properties set with `el.style.setProperty("--pos", …)` (CSSOM, allowed).
