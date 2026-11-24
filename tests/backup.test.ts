@@ -9,7 +9,7 @@ const profile: HouseProfile = {
   version: 1,
   ventilation: "singleFlow",
   facades: [{ id: "f1", name: "Sud", orientation: "S", facesWetArea: false, hasUpstairsOpenings: true }],
-  coldSurfaces: [{ id: "s1", name: "Plancher salon", location: "Au-dessus de la cave" }],
+  coldSurfaces: [{ id: "s1", name: "Plancher salon", location: "Au-dessus de la cave", absorbent: false }],
 };
 const input: CheckInput = {
   indoor: { t: 21, rh: 73 },
@@ -37,7 +37,7 @@ describe("createEntry", () => {
   });
 
   it("records a surface check with the surface name at the time", () => {
-    const check = checkSurface(14, input.indoor);
+    const check = checkSurface(14, input.indoor, false);
     const e = entry("b", "2026-11-22T09:00:00Z", {
       surface: { surfaceId: "s1", name: "Plancher salon", tempC: 14, check },
     });
@@ -47,6 +47,8 @@ describe("createEntry", () => {
       tempC: 14,
       marginC: check.marginC,
       atRisk: true,
+      surfaceRH: 100,
+      absorbent: false,
     });
   });
 
@@ -68,6 +70,22 @@ describe("sanitizeEntry", () => {
     expect(sanitizeEntry({ ...e, computed: { ...e.computed, code: "maybe" } })).toBeNull();
     expect(sanitizeEntry({ ...e, surface: { surfaceId: "s1" } })).toBeNull();
     expect(sanitizeEntry("entry")).toBeNull();
+  });
+
+  it("reads a surface check saved before the mould threshold as non-absorbent, without surface humidity", () => {
+    const old = { surfaceId: "s1", name: "Plancher salon", tempC: 14, marginC: -2, atRisk: true };
+    const e = JSON.parse(JSON.stringify(entry("a", "2026-11-22T08:00:00Z")));
+    expect(sanitizeEntry({ ...e, surface: old })?.surface).toEqual({ ...old, absorbent: false });
+  });
+
+  it("keeps the declared material and the surface humidity, and rejects an impossible humidity", () => {
+    const check = checkSurface(18, input.indoor, true);
+    const e = entry("a", "2026-11-22T08:00:00Z", {
+      surface: { surfaceId: "s1", name: "Plancher salon", tempC: 18, check },
+    });
+    const json = JSON.parse(JSON.stringify(e));
+    expect(sanitizeEntry(json)?.surface).toMatchObject({ absorbent: true, surfaceRH: check.surfaceRH });
+    expect(sanitizeEntry({ ...json, surface: { ...json.surface, surfaceRH: 140 } })).toBeNull();
   });
 });
 

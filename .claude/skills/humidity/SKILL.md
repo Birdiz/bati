@@ -22,17 +22,24 @@ Inputs: measured indoor/outdoor readings, plus two declared conditions (storm, r
 
 Recent rain only changes where to open (`openingPlan`): avoid facades facing a wet area; prefer facades ≥ 135° from every wet facade, upstairs if they have upstairs windows; fall back to any dry facade; none left → VMC only or wait.
 
+A facade is a side with windows opening to the outside (decided 2026-11-23). In a maison-bloc the living quarters share walls with the barn or a neighbour: such a wall is not a facade (opening it lets in the barn's air, which the outdoor reading does not describe), and when it runs cold it is a cold surface. The profile does not model adjacent unheated spaces yet; the target is one model for cellar, barn and attic, each with an optional reading, which would also give the cold-side temperature the temperature factor needs (see Cold surface history).
+
 `drierSide(gap)` names the drier air from the measurements alone (null within the band, unchanged by a storm): the quick check lightens that side.
 
 No VMC → no VMC instruction anywhere. **Atmospheric pressure is not modelled** (mechanism not established): do not add it.
 
 ## Cold surface
 
-At risk when surface ≤ indoor dew point; `nearLimit` within 1 °C (infrared thermometer accuracy). Yes/no plus margin.
+Status (`surfaceStatus`, worst first): **condensation** when surface ≤ indoor dew point; **near the limit** within 1 °C (`NEAR_LIMIT_C`, infrared thermometer accuracy); **mould** when the surface is declared absorbent and the indoor air cooled to the surface temperature reaches 80 % RH (`MOULD_RH`, EN ISO 13788 design criterion); otherwise no condensation. Decided 2026-11-23:
+
+- The dew point does not depend on the material: the infrared reading already includes what the material does to the surface temperature. The material only changes which threshold matters.
+- Absorbent (wood, plaster, lime render, stone, unglazed terracotta) takes water in without visible droplets, so the risk is mould before condensation, about 3 °C above the dew point in a living room (19 °C / 60 %: dew point 11.1 °C, 80 % from 14.5 °C). Glazed tile, glass and gloss paint keep the dew point check alone. Declared per cold surface in the profile (`absorbent`, false when missing).
+- 80 % only means trouble if it lasts days: the wording says so. No uncertainty band on the mould threshold (±1 °C ≈ ±6 % RH at the surface): the 80 % criterion is already conservative.
+- Not modelled: the infrared reading is too warm on bare metal (low emissivity) and on a rug (the water forms under it); a damp wall with a clear positive margin points to rising damp or a leak, not condensation.
 
 ## Log and backup
 
-An entry stores the readings and what was computed then, with the formula id: changing the formula must never rewrite history. Backup `bati-export` v1: invalid or duplicate entries dropped and counted, newer versions refused. Merge = log union by id (existing wins) and the file's profile only if the device has none.
+An entry stores the readings and what was computed then, with the formula id: changing the formula must never rewrite history. A surface check also stores the surface RH and whether the surface was declared absorbent at the time; entries saved before have neither and read as non-absorbent, so their status does not change. Backup `bati-export` v1: invalid or duplicate entries dropped and counted, newer versions refused. Merge = log union by id (existing wins) and the file's profile only if the device has none.
 
 ## Trend (`trend.ts`, Carnet)
 
@@ -48,8 +55,8 @@ Question: does the house give less water to the air over time? Indoor AH alone m
 
 Question: how often was each surface condensing, or close to it, and when? **No "better or worse" verdict**: the margin follows the weather as much as the house (a floor above an unheated cellar cools with the cellar all winter). The EN ISO 13788 temperature factor would remove that but needs the cold-side temperature (the cellar's), which is not measured; computed with the outdoor temperature it would be wrong for the commonest case: do not add it without a cellar reading. Decided 2026-11-23:
 
-- One value per day and surface: the **worst** margin of the day (one check in condensation marks the day), with the surface temperature of that check. Status from the margin with the thresholds of `checkSurface` (≤ 0 condensation, < `NEAR_LIMIT_C` near the limit).
-- Summary over the period shown (same 30 / 90 / all as the trend): days checked, days in condensation, days near the limit, worst margin and its date. Tone of the worst case: stop, alert, else go.
+- One value per day and surface: the **worst** margin of the day (one check in condensation marks the day), with the surface temperature of that check. Status with `surfaceStatus` from the saved margin, surface RH and material.
+- Summary over the period shown (same 30 / 90 / all as the trend): days checked, days in condensation, days near the limit, days at risk of mould (named only when there are some), worst margin and its date. Tone of the worst case: stop, alert (near the limit, then mould), else go.
 - Surfaces of the profile in its order, then removed ones (last saved name, "retirée de Ma maison"). "Autre surface" checks (`OTHER_SURFACE_ID`) are left out: different surfaces share that id.
 - The cold surface screen reminds the last saved check of the chosen surface (when, status, margin).
 

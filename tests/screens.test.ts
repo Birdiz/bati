@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { KEYS, memoryStorage } from "../src/storage/device";
 import { startApp } from "../src/ui/app";
 import { AppState } from "../src/ui/state";
+import { RULES } from "../src/text/fr";
 
 const html = fs.readFileSync("index.html", "utf8");
 const body = html.slice(html.indexOf("<body>") + 6, html.indexOf("</body>"));
@@ -415,7 +416,7 @@ describe("cold surface history", () => {
 describe("reference sheet", () => {
   it("fills the rules and the 5–40 °C table", () => {
     app.go("fiche");
-    expect(document.querySelectorAll("#rulesTable tbody tr")).toHaveLength(6);
+    expect(document.querySelectorAll("#rulesTable tbody tr")).toHaveLength(RULES.length);
     expect(document.querySelectorAll("#ahTable tbody tr")).toHaveLength(36);
     expect(text("#formulaNote")).toContain("Alduchov");
   });

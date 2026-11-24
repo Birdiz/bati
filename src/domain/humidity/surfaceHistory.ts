@@ -8,17 +8,16 @@
  * the commonest case. So the history counts days at risk and shows the worst margin, nothing more.
  *
  * One value per day: the worst margin of the day, since one check in condensation is enough to mark it. Values
- * are those saved with the entry; the status is read from the margin with the thresholds of `checkSurface`.
+ * are those saved with the entry; the status is read from them with the thresholds of `checkSurface`. The worst
+ * check is the lowest margin: the surface humidity depends on the margin and only weakly on the dew point, so
+ * the lowest margin of a day is also, in practice, its highest surface humidity.
  */
 import type { HouseProfile } from "../house/profile";
-import type { LogEntry } from "./log";
-import { NEAR_LIMIT_C, OTHER_SURFACE_ID } from "./surface";
+import type { LogEntry, SurfaceRecord } from "./log";
+import { OTHER_SURFACE_ID, type SurfaceStatus, surfaceStatus } from "./surface";
 
-export type SurfaceStatus = "atRisk" | "nearLimit" | "ok";
-
-export function surfaceStatus(marginC: number): SurfaceStatus {
-  return marginC <= 0 ? "atRisk" : marginC < NEAR_LIMIT_C ? "nearLimit" : "ok";
-}
+/** Status of a saved check, with today's thresholds and the material declared at the time. */
+export const recordStatus = (s: SurfaceRecord): SurfaceStatus => surfaceStatus(s.marginC, s);
 
 export interface SurfaceDay {
   day: string;
@@ -89,7 +88,7 @@ function surfaceDays(entries: readonly LogEntry[], dayOf: (at: string) => string
         day,
         marginC: worst.marginC,
         tempC: worst.tempC,
-        status: surfaceStatus(worst.marginC),
+        status: recordStatus(worst),
         checks: list.length,
       };
     });
@@ -100,6 +99,8 @@ export interface SurfaceSummary {
   days: number;
   atRisk: number;
   nearLimit: number;
+  /** Days at risk of mould (absorbent surfaces only), not counting days already in condensation or near it. */
+  mould: number;
   /** The day with the lowest margin (the earliest on a tie). */
   worst: SurfaceDay;
 }
@@ -112,6 +113,7 @@ export function summarizeSurface(days: readonly SurfaceDay[]): SurfaceSummary | 
     days: days.length,
     atRisk: days.filter((d) => d.status === "atRisk").length,
     nearLimit: days.filter((d) => d.status === "nearLimit").length,
+    mould: days.filter((d) => d.status === "mould").length,
     worst: days.reduce((a, b) => (b.marginC < a.marginC ? b : a), first),
   };
 }
@@ -124,7 +126,5 @@ export function lastSurfaceCheck(
   if (surfaceId === OTHER_SURFACE_ID) return null;
   let last: LogEntry | null = null;
   for (const e of log) if (e.surface?.surfaceId === surfaceId && (!last || e.at > last.at)) last = e;
-  return last?.surface
-    ? { at: last.at, marginC: last.surface.marginC, status: surfaceStatus(last.surface.marginC) }
-    : null;
+  return last?.surface ? { at: last.at, marginC: last.surface.marginC, status: recordStatus(last.surface) } : null;
 }

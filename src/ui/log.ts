@@ -8,7 +8,8 @@ import {
   toBackup,
 } from "../domain/backup";
 import type { LogEntry } from "../domain/humidity/log";
-import { BACKUP_ERROR, CODE_LABEL, fmt } from "../text/fr";
+import { recordStatus } from "../domain/humidity/surfaceHistory";
+import { BACKUP_ERROR, CODE_LABEL, STATUS_WORDS, fmt } from "../text/fr";
 import { byId, downloadText, flash, h } from "./dom";
 import type { AppState } from "./state";
 import { mountSurfaceHistory } from "./surfaceHistory";
@@ -50,7 +51,7 @@ function entryItem(e: LogEntry, onDelete: () => void): HTMLLIElement {
       h(
         "p",
         { class: e.surface.atRisk ? "risk" : "" },
-        `${e.surface.name} : ${fmt(e.surface.tempC)} °C, ${e.surface.atRisk ? "condensation" : "pas de condensation"} (marge ${fmt(e.surface.marginC)} °C)`,
+        `${e.surface.name} : ${fmt(e.surface.tempC)} °C, ${STATUS_WORDS[recordStatus(e.surface)]} (marge ${fmt(e.surface.marginC)} °C)`,
       ),
     e.note && h("p", { class: "note" }, e.note),
     del,

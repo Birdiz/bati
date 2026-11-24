@@ -10,6 +10,7 @@ import { spawn } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { chromium, devices, type Page } from "playwright";
+import { RULES } from "../src/text/fr";
 
 const PORT = 4300 + Math.floor(Math.random() * 500);
 const BASE = `http://localhost:${PORT}/`;
@@ -173,7 +174,7 @@ try {
   // 8. Reference sheet, printed to PDF.
   await page.goto(`${BASE}#fiche`);
   check("AH table 5–40 °C", (await page.locator("#ahTable tbody tr").count()) === 36);
-  check("rules table filled", (await page.locator("#rulesTable tbody tr").count()) === 6);
+  check("rules table filled", (await page.locator("#rulesTable tbody tr").count()) === RULES.length);
   await page.emulateMedia({ media: "print" });
   await page.pdf({
     path: `${OUT}/5-fiche.pdf`,

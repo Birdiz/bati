@@ -28,6 +28,8 @@ export interface ColdSurface {
   id: string;
   name: string;
   location: string;
+  /** Wood, plaster, lime render, stone, unglazed terracotta: takes water in, so the mould threshold applies. */
+  absorbent: boolean;
 }
 
 export interface HouseProfile {
@@ -88,7 +90,7 @@ function sanitizeSurface(v: unknown): ColdSurface | null {
   const id = text(v.id);
   const name = text(v.name);
   if (!id || !name) return null;
-  return { id, name, location: text(v.location) ?? "" };
+  return { id, name, location: text(v.location) ?? "", absorbent: v.absorbent === true };
 }
 
 /** Keeps the first entry of each id. */

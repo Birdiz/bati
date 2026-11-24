@@ -1,5 +1,6 @@
 /** Screen 2: house profile. VMC type, facades, known cold surfaces. Saved on every change. */
 import {
+  type ColdSurface,
   type Facade,
   type HouseProfile,
   ORIENTATIONS,
@@ -17,6 +18,8 @@ export function mountHouse(state: AppState): { show(): void } {
   const update = (patch: Partial<HouseProfile>) => state.setProfile({ ...state.profile, ...patch });
   const updateFacade = (id: string, patch: Partial<Facade>) =>
     update({ facades: state.profile.facades.map((f) => (f.id === id ? { ...f, ...patch } : f)) });
+  const updateSurface = (id: string, patch: Partial<ColdSurface>) =>
+    update({ coldSurfaces: state.profile.coldSurfaces.map((s) => (s.id === id ? { ...s, ...patch } : s)) });
 
   function orientationSelect(value: Orientation, label: string): HTMLSelectElement {
     const s = h(
@@ -68,7 +71,15 @@ export function mountHouse(state: AppState): { show(): void } {
           if (confirm(`Retirer la surface « ${s.name} » ? Les relevés du carnet la gardent.`))
             update({ coldSurfaces: p.coldSurfaces.filter((x) => x.id !== s.id) });
         });
-        return h("li", { "data-id": s.id }, h("span", {}, s.location ? `${s.name} — ${s.location}` : s.name), del);
+        const absorbent = h("input", { type: "checkbox", checked: s.absorbent });
+        absorbent.addEventListener("change", () => updateSurface(s.id, { absorbent: absorbent.checked }));
+        return h(
+          "li",
+          { "data-id": s.id },
+          h("span", {}, s.location ? `${s.name} — ${s.location}` : s.name),
+          h("label", { class: "check" }, absorbent, " Matière absorbante"),
+          del,
+        );
       }),
     );
   }
@@ -98,7 +109,13 @@ export function mountHouse(state: AppState): { show(): void } {
     const name = byId<HTMLInputElement>("coldSurfaceName");
     if (!name.value.trim()) return;
     const location = byId<HTMLInputElement>("coldSurfaceLocation").value.trim();
-    update({ coldSurfaces: [...state.profile.coldSurfaces, { id: state.newId(), name: name.value.trim(), location }] });
+    const absorbent = byId<HTMLInputElement>("coldSurfaceAbsorbent").checked;
+    update({
+      coldSurfaces: [
+        ...state.profile.coldSurfaces,
+        { id: state.newId(), name: name.value.trim(), location, absorbent },
+      ],
+    });
     byId<HTMLFormElement>("coldSurfaceForm").reset();
   });
 

@@ -852,6 +852,10 @@ input[role="switch"]:focus-visible {
 .trend-chart .series circle[data-status="nearLimit"] {
   fill: var(--alert);
 }
+.trend-chart .series circle[data-status="mould"] {
+  fill: var(--alert-bg);
+  stroke: var(--alert);
+}
 
 /* Save */
 .save {

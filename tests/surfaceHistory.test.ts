@@ -1,17 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { HouseProfile } from "../src/domain/house/profile";
 import type { LogEntry } from "../src/domain/humidity/log";
-import { OTHER_SURFACE_ID } from "../src/domain/humidity/surface";
-import {
-  lastSurfaceCheck,
-  summarizeSurface,
-  surfaceHistories,
-  surfaceStatus,
-} from "../src/domain/humidity/surfaceHistory";
+import { OTHER_SURFACE_ID, surfaceStatus } from "../src/domain/humidity/surface";
+import { lastSurfaceCheck, summarizeSurface, surfaceHistories } from "../src/domain/humidity/surfaceHistory";
 
 let n = 0;
 /** A saved check of surface `surfaceId` with the given margin (surface temperature = 12 + margin). */
-function check(at: string, surfaceId: string, marginC: number, name = surfaceId): LogEntry {
+function check(
+  at: string,
+  surfaceId: string,
+  marginC: number,
+  name = surfaceId,
+  mould: { absorbent: boolean; surfaceRH?: number } = { absorbent: false },
+): LogEntry {
   return {
     id: `e${++n}`,
     at,
@@ -19,7 +20,7 @@ function check(at: string, surfaceId: string, marginC: number, name = surfaceId)
     outdoor: { t: 5, rh: 85 },
     conditions: { storm: false, recentRain: false },
     computed: { indoorAH: 10, outdoorAH: 6, indoorDewPoint: 12, code: "drierOutside", formula: "test" },
-    surface: { surfaceId, name, tempC: 12 + marginC, marginC, atRisk: marginC <= 0 },
+    surface: { surfaceId, name, tempC: 12 + marginC, marginC, atRisk: marginC <= 0, ...mould },
   };
 }
 const plain = (at: string): LogEntry => {
@@ -34,17 +35,18 @@ const profile: HouseProfile = {
   ventilation: "none",
   facades: [],
   coldSurfaces: [
-    { id: "floor", name: "Plancher du salon", location: "au-dessus de la cave" },
-    { id: "wall", name: "Mur nord", location: "chambre" },
+    { id: "floor", name: "Plancher du salon", location: "au-dessus de la cave", absorbent: false },
+    { id: "wall", name: "Mur nord", location: "chambre", absorbent: false },
   ],
 };
 
 describe("surfaceStatus", () => {
   it("uses the thresholds of the surface check", () => {
-    expect(surfaceStatus(0)).toBe("atRisk");
-    expect(surfaceStatus(-0.4)).toBe("atRisk");
-    expect(surfaceStatus(0.99)).toBe("nearLimit");
-    expect(surfaceStatus(1)).toBe("ok");
+    const plain = { absorbent: false };
+    expect(surfaceStatus(0, plain)).toBe("atRisk");
+    expect(surfaceStatus(-0.4, plain)).toBe("atRisk");
+    expect(surfaceStatus(0.99, plain)).toBe("nearLimit");
+    expect(surfaceStatus(1, plain)).toBe("ok");
   });
 });
 
@@ -119,6 +121,29 @@ describe("summarizeSurface", () => {
       worst: { day: "2026-11-11", marginC: -0.5 },
     });
     expect(summarizeSurface([])).toBeNull();
+  });
+});
+
+describe("mould status in the history", () => {
+  const wood = { absorbent: true, surfaceRH: 85 };
+
+  it("counts days at risk of mould apart, with the material declared at the time", () => {
+    const [h] = surfaceHistories(
+      [
+        check("2026-11-20T08:00:00Z", "floor", 3, "Plancher", wood),
+        check("2026-11-21T08:00:00Z", "floor", 3, "Plancher", { absorbent: false, surfaceRH: 85 }),
+        check("2026-11-22T08:00:00Z", "floor", 0.5, "Plancher", { absorbent: true, surfaceRH: 97 }),
+      ],
+      profile,
+      utcDay,
+    );
+    expect(h!.days.map((d) => d.status)).toEqual(["mould", "ok", "nearLimit"]);
+    expect(summarizeSurface(h!.days)).toMatchObject({ days: 3, atRisk: 0, nearLimit: 1, mould: 1 });
+  });
+
+  it("reminds the last check with its mould status", () => {
+    const log = [check("2026-11-22T08:00:00Z", "floor", 3, "Plancher", wood)];
+    expect(lastSurfaceCheck(log, "floor")?.status).toBe("mould");
   });
 });
 

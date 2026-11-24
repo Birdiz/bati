@@ -36,7 +36,8 @@ export function mountSurface(state: AppState): { show(): void } {
     const t = parseDecimal(state.draft.surfaceT);
     const indoor = parseReading(state.draft.indoorT, state.draft.indoorRh).reading;
     if (Number.isNaN(t) || !indoor) return null;
-    return { tempC: t, check: checkSurface(t, indoor) };
+    const absorbent = state.profile.coldSurfaces.find((s) => s.id === select.value)?.absorbent ?? false;
+    return { tempC: t, check: checkSurface(t, indoor, absorbent) };
   }
 
   /** The last saved check of the chosen surface, to compare with before measuring again. */
